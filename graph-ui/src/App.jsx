@@ -4,6 +4,7 @@ import { Graph } from './components/Graph/Graph';
 import { Chat } from './components/Chat/Chat';
 import { Sidebar } from './components/Sidebar/Sidebar';
 import NLP from './components/NLP/NLP';
+import OntologyDemo from './components/Ontology/OntologyDemo';
 import { useGraphStore } from './store/graphStore';
 import './App.css';
 
@@ -34,6 +35,12 @@ function App() {
           >
             Search & NLP
           </button>
+          <button
+            className={activeTab === 'ontology' ? 'active' : ''}
+            onClick={() => setActiveTab('ontology')}
+          >
+            🧬 Ontology Editor
+          </button>
         </div>
         {activeTab === 'graph' && (
           <div className="graph-section">
@@ -43,6 +50,11 @@ function App() {
         {activeTab === 'nlp' && (
           <div className="nlp-section">
             <NLP />
+          </div>
+        )}
+        {activeTab === 'ontology' && (
+          <div className="ontology-section">
+            <OntologyDemo />
           </div>
         )}
       </div>
