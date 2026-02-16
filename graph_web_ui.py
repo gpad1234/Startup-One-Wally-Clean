@@ -59,64 +59,89 @@ def nlp_query():
         if not query:
             return jsonify({'error': 'No query provided'}), 400
 
-        # Compose a prompt for OpenAI to map query to graph actions
-        prompt = f"""
-    You are an assistant for a graph database. Map the user's natural language query to one of these actions:
-    - "stats": Return the number of nodes and edges.
-    - "visualization": Return the full graph data (nodes and edges).
-    - "list_nodes": List all node IDs.
-    - "list_edges": List all edges as (from, to, name, weight).
-    - "shortest_path": For shortest path queries, extract the start and target node names or IDs from the query and return action "shortest_path".
-    - "custom": For anything else, explain what you would do.
-
-    User query: {query}
-    Respond ONLY with a single line JSON object using double quotes for all keys and string values, e.g. {{"action": "stats", "explanation": "..."}}
-    """
-        # Try OpenAI first
+        # Check if any API keys are available
         openai_api_key = os.getenv('OPENAI_API_KEY')
-        try:
-            if not openai_api_key:
-                raise Exception('OpenAI API key not set in OPENAI_API_KEY env var')
-            openai.api_key = openai_api_key
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "system", "content": "You are a helpful assistant."},
-                          {"role": "user", "content": prompt}],
-                max_tokens=150,
-                temperature=0
-            )
-            content = response['choices'][0]['message']['content']
+        anthropic_api_key = os.getenv('CLAUDE_CODE_KEY') or os.getenv('ANTHROPIC_API_KEY')
+        
+        if not openai_api_key and not anthropic_api_key:
+            return jsonify({
+                'error': 'NLP feature requires API keys. Set OPENAI_API_KEY or ANTHROPIC_API_KEY environment variable.',
+                'feature_disabled': True
+            }), 503
+
+        # Compose a prompt for AI to map query to graph actions
+        prompt = f"""
+You are an assistant for a graph database. Map the user's natural language query to one of these actions:
+- "stats": Return the number of nodes and edges.
+- "visualization": Return the full graph data (nodes and edges).
+- "list_nodes": List all node IDs.
+- "list_edges": List all edges as (from, to, name, weight).
+- "shortest_path": For shortest path queries, extract the start and target node names or IDs from the query and return action "shortest_path".
+- "custom": For anything else, explain what you would do.
+
+User query: {query}
+Respond ONLY with a single line JSON object using double quotes for all keys and string values, e.g. {{"action": "stats", "explanation": "..."}}
+"""
+        # Try OpenAI first (only if key exists and looks valid)
+        result = None
+        openai_error = None
+        if openai_api_key and openai_api_key.startswith('sk-') and len(openai_api_key) > 20:
             try:
-                result = json.loads(content)
-            except Exception as parse_exc:
-                return jsonify({'error': f'OpenAI response could not be parsed as JSON', 'raw': content, 'exception': str(parse_exc)}), 500
-        except Exception as openai_exc:
-            # If OpenAI fails, try Claude as backup
-            anthropic_api_key = os.getenv('CLAUDE_CODE_KEY') or os.getenv('ANTHROPIC_API_KEY')
-            if not anthropic_api_key:
-                return jsonify({'error': f'OpenAI failed: {str(openai_exc)}. Claude API key not set in CLAUDE_CODE_KEY or ANTHROPIC_API_KEY env var'}), 500
-            headers = {
-                "x-api-key": anthropic_api_key,
-                "anthropic-version": "2023-06-01",
-                "content-type": "application/json"
-            }
-            data = {
-                "model": "claude-3-opus-20240229",
-                "max_tokens": 256,
-                "messages": [
-                    {"role": "user", "content": prompt}
-                ]
-            }
-            r = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=data)
-            if not r.ok:
-                return jsonify({'error': f'OpenAI failed: {str(openai_exc)}. Claude API error: {r.status_code}', 'raw': r.text}), 500
+                openai.api_key = openai_api_key
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "system", "content": "You are a helpful assistant."},
+                              {"role": "user", "content": prompt}],
+                    max_tokens=150,
+                    temperature=0
+                )
+                content = response['choices'][0]['message']['content']
+                try:
+                    result = json.loads(content)
+                except Exception as parse_exc:
+                    openai_error = f'OpenAI response could not be parsed as JSON: {content[:100]}'
+            except Exception as openai_exc:
+                openai_error = f'OpenAI API error: {str(openai_exc)[:200]}'
+        
+        # If OpenAI didn't work, try Claude as backup
+        if not result and anthropic_api_key:
             try:
-                content = r.json()["content"][0]["text"]
-                result = json.loads(content.replace("'", '"'))
-            except Exception:
-                return jsonify({'error': f'OpenAI failed: {str(openai_exc)}. Failed to parse Claude response', 'raw': r.text}), 500
+                headers = {
+                    "x-api-key": anthropic_api_key,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json"
+                }
+                data_payload = {
+                    "model": "claude-3-5-sonnet-20241022",
+                    "max_tokens": 256,
+                    "messages": [
+                        {"role": "user", "content": prompt}
+                    ]
+                }
+                r = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=data_payload)
+                if r.ok:
+                    content = r.json()["content"][0]["text"]
+                    result = json.loads(content.replace("'", '"'))
+                else:
+                    claude_error = f'Claude API error {r.status_code}: {r.text[:200]}'
+            except Exception as claude_exc:
+                claude_error = f'Claude API error: {str(claude_exc)[:200]}'
+        
+        # If neither worked, return error
+        if not result:
+            errors = []
+            if openai_error:
+                errors.append(f"OpenAI: {openai_error}")
+            if 'claude_error' in locals():
+                errors.append(f"Claude: {claude_error}")
+            return jsonify({
+                'error': 'NLP query failed. ' + '; '.join(errors) if errors else 'No valid API keys configured.',
+                'feature_disabled': len(errors) == 0
+            }), 500
+        
         action = result.get('action')
         explanation = result.get('explanation', '')
+        
         # Map action to backend
         if action == 'stats':
             node_ids = graph.get_all_nodes()
@@ -172,6 +197,7 @@ def nlp_query():
             return jsonify({'action': action, 'explanation': explanation})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 app.config['DEBUG'] = False
 
 # Enable CORS for React frontend and test pages

@@ -35,7 +35,15 @@ const NLP = () => {
       const response = await api.post('/api/nlp_query', { query: searchQuery });
       setChat(prev => ([...prev, { sender: 'bot', text: '', result: response.data }]));
     } catch (err) {
-      setChat(prev => ([...prev, { sender: 'bot', text: '', error: err.response?.data?.error || 'Failed to search.' }]));
+      const errorMsg = err.response?.data?.error || 'Failed to search.';
+      const isDisabled = err.response?.data?.feature_disabled;
+      setChat(prev => ([...prev, { 
+        sender: 'bot', 
+        text: '', 
+        error: isDisabled 
+          ? '⚠️ NLP feature is not configured. Set OPENAI_API_KEY or ANTHROPIC_API_KEY to enable.' 
+          : errorMsg 
+      }]));
     } finally {
       setLoading(false);
     }

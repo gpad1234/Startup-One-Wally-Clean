@@ -178,6 +178,7 @@ Thumbs.db/.venv/
 # Build artifacts
 bin/
 obj/
+src/core/build/
 
 # Angular project (initialize on target machine)
 angular-graph-ui/
