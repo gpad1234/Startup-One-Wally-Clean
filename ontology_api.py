@@ -36,8 +36,111 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)
 
-# Initialize ontology service
-ontology_service = OntologyService()
+# Initialize ontology service (lazy initialization to avoid startup hang)
+ontology_service = None
+
+def init_demo_data(service):
+    """Initialize demo data if ontology is empty"""
+    from src.services.ontology_models import (
+        OntologyClass, OntologyProperty, OntologyInstance,
+        PropertyType, XSDDatatype
+    )
+    
+    # Check if already initialized (more than just owl:Thing)
+    if len(service.get_all_classes()) > 1:
+        logger.info("Demo data already exists, skipping initialization")
+        return
+    
+    logger.info("Initializing demo data...")
+    
+    try:
+        # Create classes
+        service.create_class(OntologyClass(
+            id="demo:Person", label="Person",
+            description="A human being",
+            parent_classes=["owl:Thing"]
+        ))
+        service.create_class(OntologyClass(
+            id="demo:Professor", label="Professor",
+            description="A university professor",
+            parent_classes=["demo:Person"]
+        ))
+        service.create_class(OntologyClass(
+            id="demo:Student", label="Student",
+            description="A university student",
+            parent_classes=["demo:Person"]
+        ))
+        service.create_class(OntologyClass(
+            id="demo:Employee", label="Employee",
+            description="An employee",
+            parent_classes=["demo:Person"]
+        ))
+        
+        # Create properties
+        service.create_property(OntologyProperty(
+            id="demo:name", label="name",
+            property_type=PropertyType.DATA,
+            domain=["demo:Person"],
+            range=[str(XSDDatatype.STRING)],
+            annotations={"required": "true"}
+        ))
+        service.create_property(OntologyProperty(
+            id="demo:email", label="email",
+            property_type=PropertyType.DATA,
+            domain=["demo:Person"],
+            range=[str(XSDDatatype.STRING)],
+            annotations={"required": "true"}
+        ))
+        service.create_property(OntologyProperty(
+            id="demo:department", label="department",
+            property_type=PropertyType.DATA,
+            domain=["demo:Professor"],
+            range=[str(XSDDatatype.STRING)],
+            annotations={"required": "true"}
+        ))
+        service.create_property(OntologyProperty(
+            id="demo:student_id", label="student_id",
+            property_type=PropertyType.DATA,
+            domain=["demo:Student"],
+            range=[str(XSDDatatype.STRING)],
+            annotations={"required": "true"}
+        ))
+        
+        # Create instances
+        service.create_instance(OntologyInstance(
+            id="demo:prof_smith",
+            label="Professor Smith",
+            class_ids=["demo:Professor"],
+            properties={
+                "demo:name": "Dr. John Smith",
+                "demo:email": "john.smith@university.edu",
+                "demo:department": "Computer Science"
+            }
+        ))
+        service.create_instance(OntologyInstance(
+            id="demo:student_jones",
+            label="Student Jones",
+            class_ids=["demo:Student"],
+            properties={
+                "demo:name": "Alice Jones",
+                "demo:email": "alice.jones@university.edu",
+                "demo:student_id": "S12345"
+            }
+        ))
+        
+        logger.info(f"Demo data initialized: {len(service.get_all_classes())} classes")
+    except Exception as e:
+        logger.warning(f"Error initializing demo data: {e}")
+
+def get_ontology_service():
+    """Get or create ontology service instance"""
+    global ontology_service
+    if ontology_service is None:
+        logger.info("Initializing ontology service...")
+        ontology_service = OntologyService()
+        logger.info("Ontology service initialized successfully")
+        init_demo_data(ontology_service)
+    return ontology_service
 
 
 # ============================================================================
@@ -71,7 +174,7 @@ def error_response(error: str, status_code: int = 400) -> tuple:
 def get_classes():
     """Get all ontology classes"""
     try:
-        classes = ontology_service.get_all_classes()
+        classes = get_ontology_service().get_all_classes()
         return jsonify(success_response([
             {
                 "id": c.id,
@@ -90,7 +193,7 @@ def get_classes():
 def get_class(class_id: str):
     """Get specific class"""
     try:
-        class_obj = ontology_service.get_class(class_id)
+        class_obj = get_ontology_service().get_class(class_id)
         return jsonify(success_response({
             "id": class_obj.id,
             "label": class_obj.label,
@@ -123,7 +226,7 @@ def create_class():
             is_abstract=data.get('is_abstract', False)
         )
         
-        created = ontology_service.create_class(class_obj)
+        created = get_ontology_service().create_class(class_obj)
         
         return jsonify(success_response({
             "id": created.id,
@@ -144,7 +247,7 @@ def delete_class(class_id: str):
     """Delete a class"""
     try:
         force = request.args.get('force', 'false').lower() == 'true'
-        ontology_service.delete_class(class_id, force=force)
+        get_ontology_service().delete_class(class_id, force=force)
         return jsonify(success_response(None, f"Class '{class_id}' deleted"))
     except (NodeNotFoundError, InvalidOperationError) as e:
         return error_response(str(e), 400)
@@ -158,7 +261,7 @@ def get_subclasses(class_id: str):
     """Get subclasses of a class"""
     try:
         direct_only = request.args.get('direct', 'false').lower() == 'true'
-        subclasses = ontology_service.get_subclasses(class_id, direct_only=direct_only)
+        subclasses = get_ontology_service().get_subclasses(class_id, direct_only=direct_only)
         return jsonify(success_response([
             {"id": c.id, "label": c.label, "description": c.description}
             for c in subclasses
@@ -173,7 +276,7 @@ def get_superclasses(class_id: str):
     """Get superclasses of a class"""
     try:
         direct_only = request.args.get('direct', 'false').lower() == 'true'
-        superclasses = ontology_service.get_superclasses(class_id, direct_only=direct_only)
+        superclasses = get_ontology_service().get_superclasses(class_id, direct_only=direct_only)
         return jsonify(success_response([
             {"id": c.id, "label": c.label, "description": c.description}
             for c in superclasses
@@ -187,7 +290,7 @@ def get_superclasses(class_id: str):
 def get_class_full(class_id: str):
     """Get class with complete inheritance information"""
     try:
-        class_full = ontology_service.get_class_full(class_id)
+        class_full = get_ontology_service().get_class_full(class_id)
         return jsonify(success_response(class_full))
     except NodeNotFoundError as e:
         return error_response(str(e), 404)
@@ -201,7 +304,7 @@ def get_hierarchy():
     """Get class hierarchy tree"""
     try:
         root_id = request.args.get('root', 'owl:Thing')
-        hierarchy = ontology_service.get_class_hierarchy(root_id)
+        hierarchy = get_ontology_service().get_class_hierarchy(root_id)
         
         def serialize_hierarchy(node):
             return {
@@ -227,7 +330,7 @@ def get_hierarchy():
 def get_properties():
     """Get all ontology properties"""
     try:
-        properties = ontology_service.get_all_properties()
+        properties = get_ontology_service().get_all_properties()
         return jsonify(success_response([
             {
                 "id": p.id,
@@ -247,7 +350,7 @@ def get_properties():
 def get_property(property_id: str):
     """Get specific property"""
     try:
-        prop = ontology_service.get_property(property_id)
+        prop = get_ontology_service().get_property(property_id)
         return jsonify(success_response({
             "id": prop.id,
             "label": prop.label,
@@ -293,7 +396,7 @@ def create_property():
             characteristics=characteristics
         )
         
-        created = ontology_service.create_property(prop_obj)
+        created = get_ontology_service().create_property(prop_obj)
         
         return jsonify(success_response({
             "id": created.id,
@@ -330,7 +433,7 @@ def create_instance():
         validation_errors = []
         for class_id in instance_obj.class_ids:
             try:
-                errors = ontology_service.validate_instance_properties(
+                errors = get_ontology_service().validate_instance_properties(
                     class_id, 
                     instance_obj.properties
                 )
@@ -346,7 +449,7 @@ def create_instance():
                 "timestamp": datetime.utcnow().isoformat()
             }), 422
         
-        created = ontology_service.create_instance(instance_obj)
+        created = get_ontology_service().create_instance(instance_obj)
         
         return jsonify(success_response({
             "id": created.id,
@@ -366,7 +469,7 @@ def create_instance():
 def get_instance(instance_id: str):
     """Get specific instance"""
     try:
-        inst = ontology_service.get_instance(instance_id)
+        inst = get_ontology_service().get_instance(instance_id)
         return jsonify(success_response({
             "id": inst.id,
             "label": inst.label,
@@ -385,7 +488,7 @@ def get_class_instances(class_id: str):
     """Get all instances of a class"""
     try:
         direct_only = request.args.get('direct', 'true').lower() == 'true'
-        instances = ontology_service.get_instances_of_class(class_id, direct_only=direct_only)
+        instances = get_ontology_service().get_instances_of_class(class_id, direct_only=direct_only)
         return jsonify(success_response([
             {
                 "id": i.id,
@@ -406,7 +509,7 @@ def get_class_instances(class_id: str):
 def check_consistency():
     """Check ontology consistency"""
     try:
-        result = ontology_service.check_consistency()
+        result = get_ontology_service().check_consistency()
         return jsonify(success_response({
             "consistent": result.consistent,
             "errors": result.errors,
@@ -422,7 +525,7 @@ def check_consistency():
 def get_statistics():
     """Get ontology statistics"""
     try:
-        stats = ontology_service.get_statistics()
+        stats = get_ontology_service().get_statistics()
         return jsonify(success_response({
             "total_classes": stats.total_classes,
             "total_properties": stats.total_properties,
@@ -441,7 +544,7 @@ def get_statistics():
 def validate_ontology():
     """Validate ontology structure"""
     try:
-        result = ontology_service.validate_ontology()
+        result = get_ontology_service().validate_ontology()
         return jsonify(success_response({
             "valid": result.valid,
             "errors": result.errors,
