@@ -1,62 +1,22 @@
 
-import React, { useEffect, useState } from 'react';
-import { Graph } from './components/Graph/Graph';
-import { Chat } from './components/Chat/Chat';
-import { Sidebar } from './components/Sidebar/Sidebar';
-import NLP from './components/NLP/NLP';
+import React, { useEffect } from 'react';
 import OntologyDemo from './components/Ontology/OntologyDemo';
-import { useGraphStore } from './store/graphStore';
 import './App.css';
 
 
 function App() {
-  const { fetchVisualization, fetchStats } = useGraphStore();
-  const [activeTab, setActiveTab] = useState('graph');
-
-  useEffect(() => {
-    fetchVisualization();
-    fetchStats();
-  }, [fetchVisualization, fetchStats]);
 
   return (
     <div className="app">
-      {activeTab === 'graph' && <Sidebar showChat={true} />}
       <div className="main-content">
         <div className="tabs">
-          <button
-            className={activeTab === 'graph' ? 'active' : ''}
-            onClick={() => setActiveTab('graph')}
-          >
-            Graph & Chat
-          </button>
-          <button
-            className={activeTab === 'nlp' ? 'active' : ''}
-            onClick={() => setActiveTab('nlp')}
-          >
-            Search & NLP
-          </button>
-          <button
-            className={activeTab === 'ontology' ? 'active' : ''}
-            onClick={() => setActiveTab('ontology')}
-          >
+          <button className="tab active">
             🧬 Ontology Editor
           </button>
         </div>
-        {activeTab === 'graph' && (
-          <div className="graph-section">
-            <Graph />
-          </div>
-        )}
-        {activeTab === 'nlp' && (
-          <div className="nlp-section">
-            <NLP />
-          </div>
-        )}
-        {activeTab === 'ontology' && (
-          <div className="ontology-section">
-            <OntologyDemo />
-          </div>
-        )}
+        <div className="ontology-section">
+          <OntologyDemo />
+        </div>
       </div>
     </div>
   );

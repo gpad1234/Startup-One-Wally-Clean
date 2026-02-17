@@ -101,7 +101,34 @@ export const checkConsistency = () =>
 export const getStatistics = () => 
   ontologyApi.get('/api/ontology/statistics');
 
-export const validateOntology = () => 
+export const validateOntology = () =>
   ontologyApi.get('/api/ontology/validate');
+
+// ============================================================================
+// Import/Export
+// ============================================================================
+
+export const exportOntology = (format = 'xml') =>
+  ontologyApi.get('/api/ontology/export', {
+    params: { format },
+    responseType: 'text'
+  });
+
+export const importOntology = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return ontologyApi.post('/api/ontology/import', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+export const importOntologyFromText = (content, format = 'xml', clearExisting = false) =>
+  ontologyApi.post('/api/ontology/import',
+    { content, format },
+    { params: { clear: clearExisting } }
+  );
 
 export default ontologyApi;

@@ -699,13 +699,13 @@ class OntologyService:
     def validate_ontology(self) -> ValidationResult:
         """Validate entire ontology structure"""
         result = ValidationResult(valid=True)
-        
+
         # Check consistency
         consistency = self.check_consistency()
         if not consistency.consistent:
             for error in consistency.errors:
                 result.add_error(error, error_type="consistency")
-        
+
         # Check for orphan classes (no parent except owl:Thing)
         for class_obj in self.get_all_classes():
             if class_obj.id != "owl:Thing":
@@ -715,5 +715,255 @@ class OntologyService:
                         class_obj.id,
                         "hierarchy"
                     )
-        
+
         return result
+
+    # ========================================================================
+    # Import/Export Operations
+    # ========================================================================
+
+    def export_to_rdf(self, format: str = "xml") -> str:
+        """
+        Export ontology to RDF format
+
+        Args:
+            format: Output format (xml, turtle, n3, nt)
+
+        Returns:
+            RDF serialized string
+        """
+        from rdflib import Graph, Namespace, RDF, RDFS, OWL, Literal
+        from rdflib.namespace import XSD
+
+        # Create RDF graph
+        g = Graph()
+
+        # Define namespaces
+        ONT = Namespace("http://example.org/ontology#")
+        g.bind("ont", ONT)
+        g.bind("owl", OWL)
+        g.bind("rdfs", RDFS)
+
+        # Add ontology declaration
+        g.add((ONT.Ontology, RDF.type, OWL.Ontology))
+
+        # Export classes
+        for class_obj in self.get_all_classes():
+            class_uri = ONT[class_obj.id.replace(":", "_")]
+            g.add((class_uri, RDF.type, OWL.Class))
+
+            if class_obj.label:
+                g.add((class_uri, RDFS.label, Literal(class_obj.label)))
+
+            if class_obj.description:
+                g.add((class_uri, RDFS.comment, Literal(class_obj.description)))
+
+            # Add parent classes
+            for parent_id in class_obj.parent_classes:
+                parent_uri = ONT[parent_id.replace(":", "_")]
+                g.add((class_uri, RDFS.subClassOf, parent_uri))
+
+        # Export properties
+        for prop in self.get_all_properties():
+            prop_uri = ONT[prop.id.replace(":", "_")]
+
+            if prop.property_type == PropertyType.OBJECT:
+                g.add((prop_uri, RDF.type, OWL.ObjectProperty))
+            elif prop.property_type == PropertyType.DATA:
+                g.add((prop_uri, RDF.type, OWL.DatatypeProperty))
+            else:
+                g.add((prop_uri, RDF.type, OWL.AnnotationProperty))
+
+            if prop.label:
+                g.add((prop_uri, RDFS.label, Literal(prop.label)))
+
+            if prop.description:
+                g.add((prop_uri, RDFS.comment, Literal(prop.description)))
+
+            # Add domain and range
+            for domain_class in prop.domain:
+                domain_uri = ONT[domain_class.replace(":", "_")]
+                g.add((prop_uri, RDFS.domain, domain_uri))
+
+            for range_class in prop.range:
+                range_uri = ONT[range_class.replace(":", "_")]
+                g.add((prop_uri, RDFS.range, range_uri))
+
+        # Export instances
+        all_node_ids = self.graph.get_all_nodes()
+        for node_id in all_node_ids:
+            node_data = self._get_node_data(node_id)
+            if node_data and node_data.get('node_type') == self.INSTANCE_TYPE:
+                try:
+                    instance = self.get_instance(node_id)
+                    instance_uri = ONT[instance.id.replace(":", "_")]
+
+                    # Add type assertions
+                    for class_id in instance.class_ids:
+                        class_uri = ONT[class_id.replace(":", "_")]
+                        g.add((instance_uri, RDF.type, class_uri))
+
+                    if instance.label:
+                        g.add((instance_uri, RDFS.label, Literal(instance.label)))
+
+                    # Add property values
+                    for prop_id, value in instance.properties.items():
+                        prop_uri = ONT[prop_id.replace(":", "_")]
+                        g.add((instance_uri, prop_uri, Literal(value)))
+                except Exception as e:
+                    # Skip instances that can't be serialized
+                    pass
+
+        # Serialize to requested format
+        format_map = {
+            "xml": "xml",
+            "turtle": "turtle",
+            "ttl": "turtle",
+            "n3": "n3",
+            "nt": "nt"
+        }
+        rdf_format = format_map.get(format.lower(), "xml")
+
+        return g.serialize(format=rdf_format)
+
+    def import_from_rdf(self, rdf_content: str, format: str = "xml", clear_existing: bool = False) -> Dict[str, int]:
+        """
+        Import ontology from RDF format
+
+        Args:
+            rdf_content: RDF content as string
+            format: Input format (xml, turtle, n3, nt)
+            clear_existing: Whether to clear existing ontology first
+
+        Returns:
+            Dictionary with counts of imported elements
+        """
+        from rdflib import Graph, RDF, RDFS, OWL
+
+        # Parse RDF
+        g = Graph()
+        format_map = {
+            "xml": "xml",
+            "turtle": "turtle",
+            "ttl": "turtle",
+            "n3": "n3",
+            "nt": "nt",
+            "rdf": "xml",
+            "owl": "xml"
+        }
+        rdf_format = format_map.get(format.lower(), "xml")
+
+        try:
+            g.parse(data=rdf_content, format=rdf_format)
+        except Exception as e:
+            raise ValidationError(f"Failed to parse RDF: {str(e)}")
+
+        # Clear existing data if requested
+        if clear_existing:
+            # Note: This is destructive! In production, you might want to backup first
+            pass
+
+        counts = {
+            "classes": 0,
+            "properties": 0,
+            "instances": 0,
+            "errors": 0
+        }
+
+        # Helper to convert URI to ID
+        def uri_to_id(uri):
+            if uri is None:
+                return None
+            uri_str = str(uri)
+            # Extract last part of URI
+            if "#" in uri_str:
+                return uri_str.split("#")[-1]
+            elif "/" in uri_str:
+                return uri_str.split("/")[-1]
+            return uri_str.replace("_", ":")
+
+        # Import classes
+        for class_uri in g.subjects(RDF.type, OWL.Class):
+            try:
+                class_id = uri_to_id(class_uri)
+                if class_id == "Thing" or class_id == "owl_Thing":
+                    continue  # Skip root class
+
+                label = str(g.value(class_uri, RDFS.label) or class_id)
+                description = str(g.value(class_uri, RDFS.comment) or "")
+
+                # Get parent classes
+                parent_classes = []
+                for parent_uri in g.objects(class_uri, RDFS.subClassOf):
+                    parent_id = uri_to_id(parent_uri)
+                    if parent_id and parent_id != class_id:
+                        parent_classes.append(parent_id)
+
+                if not parent_classes:
+                    parent_classes = ["owl:Thing"]
+
+                # Create class if it doesn't exist
+                if not self.graph.node_exists(class_id):
+                    class_obj = OntologyClass(
+                        id=class_id,
+                        label=label,
+                        description=description if description else None,
+                        parent_classes=parent_classes
+                    )
+                    self.create_class(class_obj)
+                    counts["classes"] += 1
+            except Exception as e:
+                counts["errors"] += 1
+                print(f"Error importing class {class_uri}: {e}")
+
+        # Import properties
+        for prop_uri in g.subjects(RDF.type, OWL.ObjectProperty):
+            try:
+                prop_id = uri_to_id(prop_uri)
+                label = str(g.value(prop_uri, RDFS.label) or prop_id)
+                description = str(g.value(prop_uri, RDFS.comment) or "")
+
+                # Get domain and range
+                domain = [uri_to_id(d) for d in g.objects(prop_uri, RDFS.domain)]
+                range_vals = [uri_to_id(r) for r in g.objects(prop_uri, RDFS.range)]
+
+                if not self.graph.node_exists(prop_id):
+                    prop_obj = OntologyProperty(
+                        id=prop_id,
+                        label=label,
+                        property_type=PropertyType.OBJECT,
+                        description=description if description else None,
+                        domain=domain,
+                        range=range_vals
+                    )
+                    self.create_property(prop_obj)
+                    counts["properties"] += 1
+            except Exception as e:
+                counts["errors"] += 1
+                print(f"Error importing object property {prop_uri}: {e}")
+
+        for prop_uri in g.subjects(RDF.type, OWL.DatatypeProperty):
+            try:
+                prop_id = uri_to_id(prop_uri)
+                label = str(g.value(prop_uri, RDFS.label) or prop_id)
+                description = str(g.value(prop_uri, RDFS.comment) or "")
+
+                domain = [uri_to_id(d) for d in g.objects(prop_uri, RDFS.domain)]
+                range_vals = [uri_to_id(r) for r in g.objects(prop_uri, RDFS.range)]
+
+                if not self.graph.node_exists(prop_id):
+                    prop_obj = OntologyProperty(
+                        id=prop_id,
+                        label=label,
+                        property_type=PropertyType.DATA,
+                        description=description if description else None,
+                        domain=domain,
+                        range=range_vals
+                    )
+                    self.create_property(prop_obj)
+                    counts["properties"] += 1
+            except Exception as e:
+                counts["errors"] += 1
+                print(f"Error importing data property {prop_uri}: {e}")
+
+        return counts

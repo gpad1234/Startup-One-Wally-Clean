@@ -1,27 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import ClassEditor from './ClassEditor';
-import InstanceEditor from './InstanceEditor';
-import InheritanceTree from './InheritanceTree';
+import React, { useState, useEffect, useRef } from 'react';
 import GraphView from './GraphView';
-import { getAllClasses } from '../../services/ontologyApi';
+import { getAllClasses, importOntology, exportOntology } from '../../services/ontologyApi';
 import { mockClasses, mockInstances } from './mockOntologyData';
 import './OntologyDemo.css';
 
 /**
- * OntologyDemo - Demonstration page for Phase 1 inheritance features
+ * OntologyDemo - Knowledge Graph Visualization with RDF/OWL Import/Export
  * 
- * Shows all three main components:
- * 1. InheritanceTree - Visual hierarchy
- * 2. ClassEditor - View class with inherited properties
- * 3. InstanceEditor - Create instances with validation
+ * Features:
+ * - Interactive knowledge graph visualization
+ * - Import RDF/OWL files
+ * - Export ontology to RDF/OWL formats
  */
 const OntologyDemo = () => {
-  const [selectedClassId, setSelectedClassId] = useState(null);
-  const [showInstanceEditor, setShowInstanceEditor] = useState(false);
-  const [view, setView] = useState('tree'); // 'tree', 'class', 'instance', 'graph'
   const [classes, setClasses] = useState([]);
   const [instances, setInstances] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const fileInputRef = useRef(null);
 
   // Load all classes and instances for graph view
   useEffect(() => {
@@ -63,164 +60,126 @@ const OntologyDemo = () => {
     loadData();
   }, []);
 
-  const handleClassSelect = (classId) => {
-    setSelectedClassId(classId);
-    setView('class');
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
   };
 
-  const handleCreateInstance = () => {
-    if (!selectedClassId) {
-      alert('Please select a class first');
-      return;
+  const handleFileSelect = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    try {
+      const response = await importOntology(file);
+      const counts = response.data.data;
+
+      alert(
+        `Import successful!\n\n` +
+        `Classes: ${counts.classes}\n` +
+        `Properties: ${counts.properties}\n` +
+        `Instances: ${counts.instances}\n` +
+        `${counts.errors > 0 ? `Errors: ${counts.errors}` : ''}`
+      );
+
+      // Reload data
+      const classesResponse = await getAllClasses();
+      setClasses(classesResponse.data.data || []);
+    } catch (error) {
+      console.error('Import failed:', error);
+      alert(`Import failed: ${error.response?.data?.error || error.message}`);
+    } finally {
+      setImporting(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
-    setShowInstanceEditor(true);
-    setView('instance');
   };
 
-  const handleInstanceSaved = (instance) => {
-    console.log('Instance saved:', instance);
-    alert(`Instance "${instance.label}" created successfully!`);
-    setShowInstanceEditor(false);
-    setView('class');
-  };
+  const handleExport = async (format = 'xml') => {
+    setExporting(true);
+    try {
+      const response = await exportOntology(format);
 
-  const handleCancel = () => {
-    setShowInstanceEditor(false);
-    setView(selectedClassId ? 'class' : 'tree');
+      // Create download
+      const blob = new Blob([response.data], { type: 'application/rdf+xml' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ontology.${format === 'turtle' ? 'ttl' : format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert(`Export failed: ${error.message}`);
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
     <div className="ontology-demo">
       <div className="demo-header">
-        <h1>🧬 Ontology Editor - Phase 1 Inheritance Demo</h1>
-        <p className="demo-subtitle">
-          Explore automatic property inheritance from parent classes to subclasses
-        </p>
+        <div className="header-content">
+          <div className="header-text">
+            <h1>🧬 Ontology Knowledge Graph</h1>
+            <p className="demo-subtitle">
+              Interactive visualization with RDF/OWL import/export capabilities
+            </p>
+          </div>
+          <div className="header-actions">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              accept=".owl,.rdf,.xml,.ttl,.turtle,.n3,.nt"
+              style={{ display: 'none' }}
+            />
+            <button
+              className="action-btn import"
+              onClick={handleImportClick}
+              disabled={importing}
+              title="Import ontology from RDF/OWL file"
+            >
+              {importing ? '⏳ Importing...' : '📥 Import RDF/OWL'}
+            </button>
+            <button
+              className="action-btn export"
+              onClick={() => handleExport('xml')}
+              disabled={exporting}
+              title="Export ontology as RDF/OWL XML"
+            >
+              {exporting ? '⏳ Exporting...' : '📤 Export RDF/OWL'}
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="demo-tabs">
-        <button 
-          className={`tab ${view === 'tree' ? 'active' : ''}`}
-          onClick={() => setView('tree')}
-        >
-          📊 Hierarchy Tree
-        </button>
-        <button 
-          className={`tab ${view === 'class' ? 'active' : ''}`}
-          onClick={() => setView('class')}
-          disabled={!selectedClassId}
-        >
-          📝 Class Editor
-          {selectedClassId && <span className="tab-info">({selectedClassId})</span>}
-        </button>
-        <button 
-          className={`tab ${view === 'instance' ? 'active' : ''}`}
-          onClick={handleCreateInstance}
-          disabled={!selectedClassId}
-        >
-          ➕ Create Instance
-        </button>
-        <button 
-          className={`tab ${view === 'graph' ? 'active' : ''}`}
-          onClick={() => setView('graph')}
-        >
-          🌐 Knowledge Graph
-        </button>
-      </div>
-
-      {/* Main Content Area */}
+      {/* Knowledge Graph View */}
       <div className="demo-content">
-        {/* Hierarchy Tree View */}
-        {view === 'tree' && (
-          <div className="view-container">
-            <div className="view-instructions">
-              <h3>👋 Welcome to the Inheritance Demo!</h3>
-              <p>
-                Click on any class in the tree below to view its properties 
-                (both direct and inherited from parent classes).
-              </p>
-              <ul>
-                <li>▼ Classes with children can be expanded</li>
-                <li>○ Leaf classes have no subclasses</li>
-                <li><span className="inline-badge">3</span> Number shows instance count</li>
-                <li><span className="inline-level">L2</span> Level in hierarchy</li>
-              </ul>
-            </div>
-            
-            <InheritanceTree 
-              rootClassId="owl:Thing"
-              onClassSelect={handleClassSelect}
-            />
+        <div className="view-container">
+          <div className="view-instructions">
+            <h3>🌐 Knowledge Graph Visualization</h3>
+            <p>
+              Interactive visualization of your ontology showing classes, instances, 
+              properties, and their relationships. Pan, zoom, and click to explore.
+            </p>
+            <ul>
+              <li>Blue rectangles = Classes</li>
+              <li>Green circles = Instances</li>
+              <li>Purple boxes = Properties</li>
+              <li>Arrows show relationships (subClassOf, instanceOf, hasProperty)</li>
+            </ul>
           </div>
-        )}
-
-        {/* Class Editor View */}
-        {view === 'class' && selectedClassId && (
-          <div className="view-container">
-            <div className="view-actions">
-              <button className="action-btn back" onClick={() => setView('tree')}>
-                ← Back to Tree
-              </button>
-              <button className="action-btn create" onClick={handleCreateInstance}>
-                + Create Instance of This Class
-              </button>
-            </div>
-            
-            <ClassEditor 
-              classId={selectedClassId}
-              onClose={() => {
-                setSelectedClassId(null);
-                setView('tree');
-              }}
-            />
-          </div>
-        )}
-
-        {/* Instance Editor View */}
-        {view === 'instance' && selectedClassId && (
-          <div className="view-container">
-            <div className="view-instructions">
-              <h3>Creating Instance</h3>
-              <p>
-                Fill in all required properties (marked with *) including those 
-                inherited from parent classes. The form will validate your input 
-                before allowing submission.
-              </p>
-            </div>
-            
-            <InstanceEditor
-              classId={selectedClassId}
-              onSave={handleInstanceSaved}
-              onCancel={handleCancel}
-            />
-          </div>
-        )}
-
-        {/* Knowledge Graph View */}
-        {view === 'graph' && (
-          <div className="view-container">
-            <div className="view-instructions">
-              <h3>🌐 Knowledge Graph Visualization</h3>
-              <p>
-                Interactive visualization of your ontology showing classes, instances, 
-                properties, and their relationships. Pan, zoom, and click to explore.
-              </p>
-              <ul>
-                <li>Blue rectangles = Classes</li>
-                <li>Green circles = Instances</li>
-                <li>Purple boxes = Properties</li>
-                <li>Arrows show relationships (subClassOf, instanceOf, hasProperty)</li>
-              </ul>
-            </div>
-            
-            {loadingData ? (
-              <div className="loading-message">Loading graph data...</div>
-            ) : (
-              <GraphView classes={classes} instances={instances} />
-            )}
-          </div>
-        )}
+          
+          {loadingData ? (
+            <div className="loading-message">Loading graph data...</div>
+          ) : (
+            <GraphView classes={classes} instances={instances} />
+          )}
+        </div>
       </div>
     </div>
   );

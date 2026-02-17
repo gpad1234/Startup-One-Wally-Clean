@@ -556,6 +556,81 @@ def validate_ontology():
 
 
 # ============================================================================
+# Import/Export Endpoints
+# ============================================================================
+
+@app.route('/api/ontology/export', methods=['GET'])
+def export_ontology():
+    """Export ontology to RDF format"""
+    try:
+        format_type = request.args.get('format', 'xml')
+        rdf_content = get_ontology_service().export_to_rdf(format=format_type)
+
+        # Set appropriate content type
+        content_types = {
+            "xml": "application/rdf+xml",
+            "turtle": "text/turtle",
+            "ttl": "text/turtle",
+            "n3": "text/n3",
+            "nt": "application/n-triples"
+        }
+        content_type = content_types.get(format_type.lower(), "application/rdf+xml")
+
+        # Return raw RDF content
+        from flask import Response
+        return Response(rdf_content, mimetype=content_type)
+    except Exception as e:
+        logger.error(f"Error exporting ontology: {e}", exc_info=True)
+        return error_response(str(e), 500)
+
+
+@app.route('/api/ontology/import', methods=['POST'])
+def import_ontology():
+    """Import ontology from RDF format"""
+    try:
+        # Get file from request
+        if 'file' in request.files:
+            file = request.files['file']
+            rdf_content = file.read().decode('utf-8')
+
+            # Detect format from file extension
+            filename = file.filename.lower()
+            if filename.endswith('.ttl') or filename.endswith('.turtle'):
+                format_type = 'turtle'
+            elif filename.endswith('.n3'):
+                format_type = 'n3'
+            elif filename.endswith('.nt'):
+                format_type = 'nt'
+            else:  # .rdf, .owl, .xml
+                format_type = 'xml'
+        else:
+            # Get from JSON body
+            data = request.get_json()
+            rdf_content = data.get('content')
+            format_type = data.get('format', 'xml')
+
+        if not rdf_content:
+            return error_response("No RDF content provided", 400)
+
+        clear_existing = request.args.get('clear', 'false').lower() == 'true'
+
+        # Import the RDF
+        counts = get_ontology_service().import_from_rdf(
+            rdf_content=rdf_content,
+            format=format_type,
+            clear_existing=clear_existing
+        )
+
+        return jsonify(success_response(counts, "Ontology imported successfully"))
+
+    except ValidationError as e:
+        return error_response(str(e), 400)
+    except Exception as e:
+        logger.error(f"Error importing ontology: {e}", exc_info=True)
+        return error_response(str(e), 500)
+
+
+# ============================================================================
 # Utility Endpoints
 # ============================================================================
 
