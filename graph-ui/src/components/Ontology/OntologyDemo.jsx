@@ -78,13 +78,7 @@ const OntologyDemo = () => {
   };
 
   const handleInstanceSaved = (instance) => {
-    console.log('Instance saved:', insgraph' ? 'active' : ''}`}
-          onClick={() => setView('graph')}
-        >
-          🌐 Knowledge Graph
-        </button>
-        <button 
-          className={`tab ${view === 'tance);
+    console.log('Instance saved:', instance);
     alert(`Instance "${instance.label}" created successfully!`);
     setShowInstanceEditor(false);
     setView('class');
@@ -125,32 +119,13 @@ const OntologyDemo = () => {
           onClick={handleCreateInstance}
           disabled={!selectedClassId}
         >
-          ➕ Knowledge Graph View */}
-        {view === 'graph' && (
-          <div className="view-container">
-            <div className="view-instructions">
-              <h3>🌐 Knowledge Graph Visualization</h3>
-              <p>
-                Interactive visualization of your ontology showing classes, instances, 
-                properties, and their relationships. Pan, zoom, and click to explore.
-              </p>
-              <ul>
-                <li>Blue rectangles = Classes</li>
-                <li>Green circles = Instances</li>
-                <li>Purple boxes = Properties</li>
-                <li>Arrows show relationships (subClassOf, instanceOf, hasProperty)</li>
-              </ul>
-            </div>
-            
-            {loadingData ? (
-              <div className="loading-message">Loading graph data...</div>
-            ) : (
-              <GraphView classes={classes} instances={instances} />
-            )}
-          </div>
-        )}
-
-        {/* Create Instance
+          ➕ Create Instance
+        </button>
+        <button 
+          className={`tab ${view === 'graph' ? 'active' : ''}`}
+          onClick={() => setView('graph')}
+        >
+          🌐 Knowledge Graph
         </button>
       </div>
 
@@ -221,48 +196,31 @@ const OntologyDemo = () => {
             />
           </div>
         )}
-      </div>
 
-      {/* Feature Highlights */}
-      <div className="demo-footer">
-        <div className="feature-card">
-          <h4>✨ Phase 1 Features</h4>
-          <ul>
-            <li>Automatic property inheritance from parent classes</li>
-            <li>Visual distinction between direct and inherited properties</li>
-            <li>Source tracking for each inherited property</li>
-            <li>Validation of required properties (including inherited)</li>
-            <li>Multi-level inheritance support (grandparents, etc.)</li>
-            <li>Circular inheritance prevention</li>
-          </ul>
-        </div>
-
-        <div className="feature-card">
-          <h4>📝 Example Hierarchy</h4>
-          <pre className="example-code">
-{`Person (root)
-  ├─ properties: name*, email*
-  └─ Professor (extends Person)
-      ├─ properties: department*
-      └─ inherits: name*, email*
-          (3 total properties)
-
-Student (extends Person)
-  ├─ properties: student_id*, gpa
-  └─ inherits: name*, email*
-      (4 total properties)`}
-          </pre>
-        </div>
-
-        <div className="feature-card">
-          <h4>🔍 Try It Out</h4>
-          <ol>
-            <li>View the hierarchy tree to see your ontology structure</li>
-            <li>Click on a class like "Professor" to see inherited properties</li>
-            <li>Create an instance - notice validation requires inherited properties</li>
-            <li>Try missing a required field to see validation errors</li>
-          </ol>
-        </div>
+        {/* Knowledge Graph View */}
+        {view === 'graph' && (
+          <div className="view-container">
+            <div className="view-instructions">
+              <h3>🌐 Knowledge Graph Visualization</h3>
+              <p>
+                Interactive visualization of your ontology showing classes, instances, 
+                properties, and their relationships. Pan, zoom, and click to explore.
+              </p>
+              <ul>
+                <li>Blue rectangles = Classes</li>
+                <li>Green circles = Instances</li>
+                <li>Purple boxes = Properties</li>
+                <li>Arrows show relationships (subClassOf, instanceOf, hasProperty)</li>
+              </ul>
+            </div>
+            
+            {loadingData ? (
+              <div className="loading-message">Loading graph data...</div>
+            ) : (
+              <GraphView classes={classes} instances={instances} />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -12,7 +12,7 @@ Supports:
 import json
 from typing import List, Dict, Set, Optional, Tuple, Any
 from collections import deque
-from simple_db_python import SimpleDB
+from src.adapters.simple_db import SimpleDB
 
 
 class GraphDB:
@@ -179,7 +179,7 @@ class GraphDB:
     # Edge Operations
     # ========================================================================
     
-    def add_edge(self, from_node: str, to_node: str, weight: float = 1.0) -> bool:
+    def add_edge(self, from_node: str, to_node: str, weight: float = 1.0, label: str = "") -> bool:
         """
         Add an edge between two nodes
         
@@ -187,6 +187,7 @@ class GraphDB:
             from_node: Source node
             to_node: Destination node
             weight: Edge weight (for weighted graphs)
+            label: Optional edge label/type
             
         Returns:
             True if edge was added, False otherwise
@@ -197,7 +198,11 @@ class GraphDB:
         
         # Add edge
         edge_key = f"edge:{from_node}:{to_node}"
-        edge_data = {"weight": weight} if self.weighted else {}
+        edge_data = {}
+        if self.weighted:
+            edge_data["weight"] = weight
+        if label:
+            edge_data["label"] = label
         self.db.set(edge_key, json.dumps(edge_data))
         
         # Update adjacency list for from_node

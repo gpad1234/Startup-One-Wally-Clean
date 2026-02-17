@@ -47,6 +47,29 @@ npm run dev
 - ✅ Beautiful, responsive React UI with Zustand state management
 - ✅ Full CRUD operations via natural language
 - ✅ Hot module replacement during development
+- ✅ **Automated Quality Control Dashboard** with persistent test result storage
+
+## 🧪 Quality Control Dashboard (NEW!)
+
+**Automated testing with persistent result storage and real-time monitoring.**
+
+```bash
+# Start the QC Dashboard
+./start_qc.sh
+
+# Access at http://localhost:5001
+```
+
+### Features:
+- 🎯 **One-Click Testing** - Test by layer (Core, Adapter, Service, API)
+- 📊 **Real-Time Statistics** - Success rates, test counts, duration tracking
+- 📈 **Historical Trends** - Track quality over time with SQLite persistence
+- 🔍 **Failure Monitoring** - Instantly see which tests are failing
+- 🤖 **Auto-Discovery** - Automatically finds and runs new tests
+- 🌐 **REST API** - Integrate with CI/CD pipelines
+- 📱 **Responsive UI** - Access from any device
+
+**See:** [QC_QUICKSTART.md](QC_QUICKSTART.md) | [QC_DASHBOARD_README.md](QC_DASHBOARD_README.md)
 
 ## 📊 Technology Stack
 

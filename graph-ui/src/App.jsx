@@ -20,7 +20,7 @@ function App() {
 
   return (
     <div className="app">
-      <Sidebar showChat={activeTab === 'graph'} />
+      {activeTab === 'graph' && <Sidebar showChat={true} />}
       <div className="main-content">
         <div className="tabs">
           <button

@@ -235,6 +235,7 @@ export default function GraphView({ classes = [], instances = [] }) {
         >
           <Controls />
           <MiniMap
+            position="top-right"
             nodeColor={(node) => {
               if (node.className === 'class-node') return '#3b82f6';
               if (node.className === 'instance-node') return '#22c55e';
