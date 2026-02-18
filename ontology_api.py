@@ -12,6 +12,7 @@ import logging
 from datetime import datetime
 from typing import Dict, Any
 from src.services.ontology_service import OntologyService
+from src.services.graph_pagination_service import GraphPaginationService
 from src.services.ontology_models import (
     OntologyClass,
     OntologyProperty,
@@ -38,6 +39,7 @@ CORS(app)
 
 # Initialize ontology service (lazy initialization to avoid startup hang)
 ontology_service = None
+pagination_service = None
 
 def init_demo_data(service):
     """Initialize demo data if ontology is empty"""
@@ -141,6 +143,16 @@ def get_ontology_service():
         logger.info("Ontology service initialized successfully")
         init_demo_data(ontology_service)
     return ontology_service
+
+
+def get_pagination_service():
+    """Get or create pagination service instance"""
+    global pagination_service
+    if pagination_service is None:
+        logger.info("Initializing pagination service...")
+        pagination_service = GraphPaginationService(get_ontology_service().graph)
+        logger.info("Pagination service initialized successfully")
+    return pagination_service
 
 
 # ============================================================================
@@ -627,6 +639,106 @@ def import_ontology():
         return error_response(str(e), 400)
     except Exception as e:
         logger.error(f"Error importing ontology: {e}", exc_info=True)
+        return error_response(str(e), 500)
+
+
+# ============================================================================
+# Graph Pagination Endpoints
+# ============================================================================
+
+@app.route('/api/ontology/graph/nodes', methods=['GET'])
+def get_paginated_nodes():
+    """Get paginated list of nodes
+    
+    Query Parameters:
+        skip (int): Number of nodes to skip (default: 0)
+        limit (int): Maximum nodes to return (default: 50)
+        type (str): Optional node type filter (e.g., 'owl:Class')
+        search (str): Optional search query
+    
+    Returns:
+        JSON with nodes, edges, pagination metadata
+    """
+    try:
+        skip = int(request.args.get('skip', 0))
+        limit = int(request.args.get('limit', 50))
+        node_type = request.args.get('type')
+        search_query = request.args.get('search')
+        
+        result = get_pagination_service().get_page(
+            skip=skip,
+            limit=limit,
+            node_type=node_type,
+            search_query=search_query
+        )
+        
+        return jsonify(success_response(result))
+        
+    except Exception as e:
+        logger.error(f"Error getting paginated nodes: {e}", exc_info=True)
+        return error_response(str(e), 500)
+
+
+@app.route('/api/ontology/graph/viewport', methods=['POST'])
+def get_viewport():
+    """Get fish-eye viewport centered on a node
+    
+    Request Body (JSON):
+        center_node (str): ID of the center node
+        radius (int): Number of hops from center (default: 2)
+        limit (int): Maximum nodes to return (default: 50)
+    
+    Returns:
+        JSON with nodes, edges, distance levels
+    """
+    try:
+        data = request.get_json()
+        
+        if not data or 'center_node' not in data:
+            return error_response("Missing 'center_node' in request body", 400)
+        
+        center_node = data['center_node']
+        radius = data.get('radius', 2)
+        limit = data.get('limit', 50)
+        
+        result = get_pagination_service().get_viewport(
+            center_id=center_node,
+            radius=radius,
+            limit=limit
+        )
+        
+        return jsonify(success_response(result))
+        
+    except Exception as e:
+        logger.error(f"Error getting viewport: {e}", exc_info=True)
+        return error_response(str(e), 500)
+
+
+@app.route('/api/ontology/graph/neighbors/<node_id>', methods=['GET'])
+def get_neighbors(node_id):
+    """Get immediate neighbors of a node
+    
+    Path Parameters:
+        node_id (str): ID of the node
+    
+    Query Parameters:
+        depth (int): Number of hops (default: 1)
+    
+    Returns:
+        JSON with neighbor nodes and connecting edges
+    """
+    try:
+        depth = int(request.args.get('depth', 1))
+        
+        result = get_pagination_service().get_neighbors(
+            node_id=node_id,
+            depth=depth
+        )
+        
+        return jsonify(success_response(result))
+        
+    except Exception as e:
+        logger.error(f"Error getting neighbors: {e}", exc_info=True)
         return error_response(str(e), 500)
 
 

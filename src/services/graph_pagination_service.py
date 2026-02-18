@@ -37,10 +37,11 @@ class GraphPaginationService:
         self.edge_index = {}  # node_id -> [(target_id, edge_data)]
         
         # Build node indexes
-        all_nodes = self.graph.get_all_nodes()
-        for node in all_nodes:
-            node_id = node.get('id')
-            if node_id:
+        # get_all_nodes() returns list of node IDs, not node objects
+        all_node_ids = self.graph.get_all_nodes()
+        for node_id in all_node_ids:
+            node = self.graph.get_node(node_id)
+            if node:
                 self.node_index[node_id] = node
                 
                 # Index by type
@@ -54,11 +55,14 @@ class GraphPaginationService:
         for node_id in self.node_index:
             self.edge_index[node_id] = []
             neighbors = self.graph.get_neighbors(node_id)
-            for neighbor in neighbors:
-                self.edge_index[node_id].append({
-                    'target': neighbor,
-                    'type': 'connected'
-                })
+            for neighbor_dict in neighbors:
+                # get_neighbors returns list of dicts with 'to' key
+                target_id = neighbor_dict.get('to') if isinstance(neighbor_dict, dict) else neighbor_dict
+                if target_id:
+                    self.edge_index[node_id].append({
+                        'target': target_id,
+                        'type': 'connected'
+                    })
     
     def get_page(
         self,
