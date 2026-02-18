@@ -171,11 +171,23 @@ class GraphPaginationService:
             next_level = []
             
             for node_id in current_level:
-                # Get neighbors
-                neighbors = [
+                # Get neighbors (bidirectional - follow edges in both directions)
+                # Forward edges: node_id -> target
+                forward_neighbors = [
                     edge['target'] 
                     for edge in self.edge_index.get(node_id, [])
                 ]
+                
+                # Backward edges: source -> node_id (node_id is target)
+                backward_neighbors = [
+                    source_id
+                    for source_id, edges in self.edge_index.items()
+                    for edge in edges
+                    if edge['target'] == node_id
+                ]
+                
+                # Combine both directions
+                neighbors = forward_neighbors + backward_neighbors
                 
                 for neighbor_id in neighbors:
                     if neighbor_id not in visited:
@@ -302,20 +314,24 @@ class GraphPaginationService:
         }
     
     def _get_edges_for_nodes(self, node_ids: List[str]) -> List[Dict[str, Any]]:
-        """Get edges between nodes in the list"""
+        """Get edges between nodes in the list (bidirectional)"""
         node_set = set(node_ids)
         edges = []
+        seen_edges = set()  # Track (source, target) pairs to avoid duplicates
         
         for source_id in node_ids:
             for edge in self.edge_index.get(source_id, []):
                 target_id = edge['target']
                 # Only include edges where both nodes are in our set
                 if target_id in node_set:
-                    edges.append({
-                        'source': source_id,
-                        'target': target_id,
-                        'type': edge.get('type', 'connected')
-                    })
+                    edge_key = (source_id, target_id)
+                    if edge_key not in seen_edges:
+                        seen_edges.add(edge_key)
+                        edges.append({
+                            'source': source_id,
+                            'target': target_id,
+                            'type': edge.get('type', 'connected')
+                        })
         
         return edges
     
