@@ -30,7 +30,7 @@ const PaginationTest = () => {
     setError(null);
     try {
       const response = await fetch(
-        `http://127.0.0.1:5002/api/ontology/graph/nodes?skip=${skip}&limit=${limit}`
+        `/api/ontology/graph/nodes?skip=${skip}&limit=${limit}`
       );
       const data = await response.json();
       setResult(data);
@@ -45,7 +45,7 @@ const PaginationTest = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://127.0.0.1:5002/api/ontology/graph/viewport', {
+      const response = await fetch('/api/ontology/graph/viewport', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -68,7 +68,7 @@ const PaginationTest = () => {
     setError(null);
     try {
       const response = await fetch(
-        `http://127.0.0.1:5002/api/ontology/graph/neighbors/${encodeURIComponent(nodeId)}?depth=1`
+        `/api/ontology/graph/neighbors/${encodeURIComponent(nodeId)}?depth=1`
       );
       const data = await response.json();
       setResult(data);

@@ -39,7 +39,7 @@ const VirtualizedGraphViewInner = ({ initialCenter = 'owl:Thing', initialRadius 
     console.log('🔍 Loading viewport:', { center, radius: rad });
     
     try {
-      const response = await fetch('http://127.0.0.1:5002/api/ontology/graph/viewport', {
+      const response = await fetch('/api/ontology/graph/viewport', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
