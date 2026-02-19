@@ -207,5 +207,5 @@ See [LICENSE](../LICENSE) file for details.
 
 <div style="text-align: center; padding: 40px 0; background: #f8fafc; margin-top: 40px; border-radius: 8px;">
 <p style="font-size: 18px; margin-bottom: 15px;">Ready to explore ontologies like never before?</p>
-<a href="getting-started.md" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: bold;">Get Started →</a>
+<a href="getting-started" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: bold;">Get Started →</a>
 </div>
