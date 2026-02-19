@@ -1,105 +1,145 @@
-# Symmetrical Robot - Graph Database & Data Structures
+# WALLY Ontology Editor
 
-A comprehensive educational project demonstrating:
-- **Graph Database** with BFS, DFS, Dijkstra's algorithm
-- **Modern React Web UI** for graph visualization and natural language querying
-- **In-memory database** (SimpleDB) in C with Python bindings
-- **Linked list implementations** (singly, doubly, circular)
-- **FFI integration** showing C/Python interoperability
+**Interactive Fish-Eye Graph Visualization for Large-Scale Ontologies**
 
-## 🚀 Quick Start (React + Flask)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-161.35.239.151-blue?style=flat-square)](http://161.35.239.151)
+[![Documentation](https://img.shields.io/badge/Docs-GitHub%20Pages-green?style=flat-square)](https://gpad1234.github.io/Startup-One-Wally-Clean/)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat-square&logo=github)](https://github.com/gpad1234/Startup-One-Wally-Clean)
 
-### One Command Startup
+---
 
-```bash
-# Make the script executable
-chmod +x run.sh
+## 📚 **[Full Documentation →](https://gpad1234.github.io/Startup-One-Wally-Clean/)**
 
-# Start both servers
-./run.sh
-```
+Complete documentation including features, architecture, deployment guides, and API reference is available at:
 
-Then open: **http://localhost:5173**
+**https://gpad1234.github.io/Startup-One-Wally-Clean/**
 
-### Manual Startup
+---
+
+WALLY is a next-generation ontology editor featuring:
+- **🎯 Fish-Eye Visualization** - Distance-based scaling for focus+context view
+- **🗺️ Interactive MiniMap** - Click, drag, and scroll navigation
+- **⚡ Real-Time Pagination** - BFS-based viewport loading
+- **🖱️ Click-to-Recenter** - Dynamic viewport updates
+- **🎨 Beautiful Design** - Gradient nodes, smooth animations
+- **📊 Scalable Architecture** - Designed for 1000+ node ontologies
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.12+
+- Node.js 18+
+- npm 10+
+
+### Start Development
 
 ```bash
 # Terminal 1: Start Flask API
-python3 graph_web_ui.py
+python3 ontology_api.py
 
-# Terminal 2: Start React UI
+# Terminal 2: Start React Frontend
 cd graph-ui
 npm install  # only needed first time
 npm run dev
 ```
 
-**Live at**:
-- 🔴 API: http://127.0.0.1:5000
-- 🔵 UI: http://localhost:5173
+**Access the application:**
+- 🔵 Frontend: http://localhost:5173 (Fish-Eye Graph)
+- 🔴 Backend API: http://localhost:5002
 
-## ✨ Features
+**Try it:**
+1. Click any node to recenter the fish-eye view
+2. Adjust the radius slider to control viewport depth
+3. Use the MiniMap to navigate and pan around the graph
 
-- ✅ Interactive D3.js graph visualization
-- ✅ Natural language query interface ("add node Alice", "path from A to B")
-- ✅ Real-time graph statistics and node management
-- ✅ All graph algorithms: BFS, DFS, Dijkstra, topological sort
-- ✅ CORS properly configured for frontend-backend communication
-- ✅ Beautiful, responsive React UI with Zustand state management
-- ✅ Full CRUD operations via natural language
-- ✅ Hot module replacement during development
-- ✅ **Automated Quality Control Dashboard** with persistent test result storage
+📖 **[Complete Setup Guide →](https://gpad1234.github.io/Startup-One-Wally-Clean/getting-started.html)**
 
-## 🧪 Quality Control Dashboard (NEW!)
+## ✨ Key Features
 
-**Automated testing with persistent result storage and real-time monitoring.**
+- ✅ **Fish-Eye Visualization** - Nodes scale by distance from center (1.8x → 0.5x)
+- ✅ **Interactive MiniMap** - Pannable, zoomable overview with click navigation
+- ✅ **Click-to-Recenter** - Any node becomes the new center
+- ✅ **Viewport Pagination** - BFS algorithm loads only visible nodes
+- ✅ **Bidirectional Traversal** - Navigate parent→child and child→parent
+- ✅ **Real-Time Updates** - Instant viewport fetching on interaction
+- ✅ **Beautiful Design** - Gradient nodes, glow effects, smooth animations
+- ✅ **Production Ready** - Deployed at http://161.35.239.151
 
-```bash
-# Start the QC Dashboard
-./start_qc.sh
+📖 **[Full Feature List →](https://gpad1234.github.io/Startup-One-Wally-Clean/features.html)**
 
-# Access at http://localhost:5001
-```
-
-### Features:
-- 🎯 **One-Click Testing** - Test by layer (Core, Adapter, Service, API)
-- 📊 **Real-Time Statistics** - Success rates, test counts, duration tracking
-- 📈 **Historical Trends** - Track quality over time with SQLite persistence
-- 🔍 **Failure Monitoring** - Instantly see which tests are failing
-- 🤖 **Auto-Discovery** - Automatically finds and runs new tests
-- 🌐 **REST API** - Integrate with CI/CD pipelines
-- 📱 **Responsive UI** - Access from any device
-
-**See:** [QC_QUICKSTART.md](QC_QUICKSTART.md) | [QC_DASHBOARD_README.md](QC_DASHBOARD_README.md)
-
-## 📊 Technology Stack
-
-| Component | Technology |
-|-----------|-----------|
-| Frontend | React 18 + Vite + D3.js |
-| Backend | Flask + Python 3.12 |
-| State | Zustand (lightweight) |
-| HTTP Client | Axios |
-| Styling | CSS3 |
-| Build | Vite (ultra-fast) |
+---
 
 ## 📚 Documentation
 
-See **[WEB_UI_README.md](WEB_UI_README.md)** for complete guide.
+### 📖 GitHub Pages Site
 
-### Graph Database (Python)
+Complete documentation is available at: **https://gpad1234.github.io/Startup-One-Wally-Clean/**
 
-```bash
-# Run graph database demo
-make run-graph-db
+| Documentation | Description |
+|---------------|-------------|
+| [**Home**](https://gpad1234.github.io/Startup-One-Wally-Clean/) | Project overview and quick links |
+| [**Features**](https://gpad1234.github.io/Startup-One-Wally-Clean/features.html) | Fish-eye visualization details |
+| [**Getting Started**](https://gpad1234.github.io/Startup-One-Wally-Clean/getting-started.html) | Installation and setup guide |
+| [**Development**](https://gpad1234.github.io/Startup-One-Wally-Clean/development.html) | Developer workflow and standards |
+| [**Deployment**](https://gpad1234.github.io/Startup-One-Wally-Clean/deployment.html) | Production deployment guide |
+| [**Architecture**](https://gpad1234.github.io/Startup-One-Wally-Clean/architecture.html) | System design and algorithms |
 
-# Run comprehensive examples
-make run-graph-examples
+### 📄 Additional Guides
 
-# Run all graph tests
-make test-graph
+- [ACTION_PLAN.md](ACTION_PLAN.md) - 4-week scaling roadmap
+- [DIGITALOCEAN_DEPLOY.md](DIGITALOCEAN_DEPLOY.md) - Complete deployment guide (923 lines)
+- [SESSION_2026_02_18.md](SESSION_2026_02_18.md) - Latest development session summary
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture documentation
+
+---
+
+## 🏗️ Architecture
+
+### System Overview
+
+```
+┌─────────────┐      HTTP/JSON      ┌──────────────┐      ┌─────────────┐
+│   React     │◄──────Relative──────►│  Flask API   │◄────►│  GraphDB    │
+│  Frontend   │      URLs: /api/*    │  Port 5002   │      │ (In-Memory) │
+│  Port 5173  │                      │              │      │             │
+│             │                      │  Pagination  │      │ C Libraries │
+│  Fish-Eye   │                      │  BFS Algo    │      │ libsimple   │
+│  ReactFlow  │                      │              │      │   db.so     │
+└─────────────┘                      └──────────────┘      └─────────────┘
 ```
 
-### Simple Database (C + Python)
+### Fish-Eye Algorithm (BFS)
+
+```python
+def get_viewport(center_node, radius, limit):
+    # 1. BFS traversal from center
+    # 2. Track distance from center (0, 1, 2, ...)
+    # 3. Bidirectional: parent→child + child→parent
+    # 4. Return nodes with distance metadata
+    # 5. Frontend applies visual scaling by distance
+```
+
+**[Full Architecture Details →](https://gpad1234.github.io/Startup-One-Wally-Clean/architecture.html)**
+
+---
+
+## 📊 Technology Stack
+
+### Production Stack
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| Frontend | React 18 + Vite | UI framework + build tool |
+| Graph Viz | ReactFlow | Interactive graph rendering |
+| Backend | Flask + Python 3.12 | REST API server |
+| Ontology | rdflib 7.6.0 | RDF/OWL operations |
+| Database | GraphDB (In-Memory) | Triple store |
+| Data Structures | C Libraries | High-performance core |
+| Proxy | nginx | Reverse proxy + SSL |
+| Services | systemd | Process management |
+| Platform | DigitalOcean Ubuntu 24.04 | Cloud hosting |
+
+---
 
 ```bash
 # Build C library
