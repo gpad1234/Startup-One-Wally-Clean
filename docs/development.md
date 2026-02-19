@@ -619,4 +619,4 @@ git push origin v1.1.0
 
 ---
 
-[← Back to Home](index.md) | [Deployment →](deployment.md)
+[← Back to Home](./) | [Deployment →](deployment)

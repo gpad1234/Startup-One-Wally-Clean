@@ -4,12 +4,12 @@ Welcome to the WALLY Ontology Editor documentation site!
 
 ## 📚 Documentation Pages
 
-- **[Home](index.md)** - Project overview and quick links
-- **[Features](features.md)** - Fish-eye visualization and interactive features
-- **[Getting Started](getting-started.md)** - Installation and setup guide
-- **[Development](development.md)** - Developer workflow and contribution guide
-- **[Deployment](deployment.md)** - Production deployment guide
-- **[Architecture](architecture.md)** - System design and algorithms
+- **[Home](index.html)** - Project overview and quick links
+- **[Features](features.html)** - Fish-eye visualization and interactive features
+- **[Getting Started](getting-started.html)** - Installation and setup guide
+- **[Development](development.html)** - Developer workflow and contribution guide
+- **[Deployment](deployment.html)** - Production deployment guide
+- **[Architecture](architecture.html)** - System design and algorithms
 
 ## 🚀 Quick Links
 
@@ -111,8 +111,8 @@ All documentation uses standard markdown plus:
 Link to other docs pages:
 
 ```markdown
-[Features](features.md)
-[Getting Started](getting-started.md)
+[Features](features.html)
+[Getting Started](getting-started.html)
 [API Docs](api/)
 ```
 

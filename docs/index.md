@@ -48,7 +48,7 @@ npm run dev
 
 Visit **http://localhost:5173** to see the fish-eye graph in action!
 
-[📖 Full Getting Started Guide →](getting-started.md)
+[📖 Full Getting Started Guide →](getting-started)
 
 ---
 
@@ -171,7 +171,7 @@ GET /api/ontology/graph/neighbors/<node_id>
 
 ## 🤝 Contributing
 
-We welcome contributions! See our [Development Guide](development.md) for:
+We welcome contributions! See our [Development Guide](development) for:
 
 - Local development setup
 - Code architecture

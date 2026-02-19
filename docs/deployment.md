@@ -646,4 +646,4 @@ For complete deployment documentation, see:
 
 ---
 
-[← Back to Home](index.md) | [Development →](development.md)
+[← Back to Home](./) | [Development →](development)

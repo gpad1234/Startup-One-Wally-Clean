@@ -393,10 +393,10 @@ npm test
 
 Now that you have WALLY running locally:
 
-1. **Explore Features** - [Read the Features Guide →](features.md)
-2. **Understand Architecture** - [Architecture Overview →](architecture.md)
-3. **Deploy to Production** - [Deployment Guide →](deployment.md)
-4. **Contribute** - [Development Guide →](development.md)
+1. **Explore Features** - [Read the Features Guide →](features)
+2. **Understand Architecture** - [Architecture Overview →](architecture)
+3. **Deploy to Production** - [Deployment Guide →](deployment)
+4. **Contribute** - [Development Guide →](development)
 
 ---
 
@@ -443,4 +443,4 @@ tail -f logs/ontology_api.log
 
 ---
 
-[← Back to Home](index.md) | [Features →](features.md)
+[← Back to Home](./) | [Features →](features)

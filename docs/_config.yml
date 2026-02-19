@@ -10,12 +10,12 @@ theme: jekyll-theme-cayman
 
 # Navigation
 header_pages:
-  - index.md
-  - features.md
-  - getting-started.md
-  - development.md
-  - deployment.md
-  - architecture.md
+  - index.html
+  - features.html
+  - getting-started.html
+  - development.html
+  - deployment.html
+  - architecture.html
 
 # Social links
 github_username: gpad1234

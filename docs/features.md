@@ -276,9 +276,9 @@ Features planned for future releases:
 
 Detailed documentation for each feature:
 
-- [Getting Started →](getting-started.md)
-- [Development Guide →](development.md)
-- [Architecture Overview →](architecture.md)
+- [Getting Started →](getting-started)
+- [Development Guide →](development)
+- [Architecture Overview →](architecture)
 - [API Reference →](api/)
 
 ---
@@ -300,4 +300,4 @@ Detailed documentation for each feature:
 
 ---
 
-[← Back to Home](index.md) | [Getting Started →](getting-started.md)
+[← Back to Home](./) | [Getting Started →](getting-started)

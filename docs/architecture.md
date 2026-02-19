@@ -589,8 +589,8 @@ const nodeTypes = useMemo(() => ({
 
 - **[ACTION_PLAN.md](../ACTION_PLAN.md)** - 4-week scaling roadmap
 - **[SERVICE_LAYER_DESIGN.md](architecture/SERVICE_LAYER_DESIGN.md)** - Detailed service design
-- **[Development Guide](development.md)** - Code organization and standards
+- **[Development Guide](development)** - Code organization and standards
 
 ---
 
-[← Back to Home](index.md) | [Features →](features.md)
+[← Back to Home](./) | [Features →](features)
