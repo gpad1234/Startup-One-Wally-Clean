@@ -314,6 +314,9 @@ const VirtualizedGraphViewInner = ({ initialCenter = 'owl:Thing', initialRadius 
             />
             <span style={styles.value}>{radius}</span>
           </label>
+          <div style={styles.hint}>
+            💡 Click nodes to recenter | Click/drag MiniMap to navigate
+          </div>
         </div>
       </div>
 
@@ -358,7 +361,20 @@ const VirtualizedGraphViewInner = ({ initialCenter = 'owl:Thing', initialRadius 
               const distance = node.data.distance || 0;
               return distance === 0 ? '#ef4444' : '#3b82f6';
             }}
+            nodeStrokeColor={(node) => {
+              const distance = node.data.distance || 0;
+              return distance === 0 ? '#dc2626' : '#2563eb';
+            }}
+            nodeStrokeWidth={3}
             maskColor="rgba(0, 0, 0, 0.1)"
+            style={{
+              background: '#f1f5f9',
+              border: '2px solid #cbd5e1',
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}
+            pannable={true}
+            zoomable={true}
           />
         </ReactFlow>
       </div>
@@ -424,7 +440,8 @@ const styles = {
   controls: {
     display: 'flex',
     gap: '20px',
-    alignItems: 'center'
+    alignItems: 'center',
+    flexWrap: 'wrap'
   },
   label: {
     display: 'flex',
@@ -432,6 +449,15 @@ const styles = {
     gap: '10px',
     fontSize: '14px',
     color: '#64748b'
+  },
+  hint: {
+    fontSize: '13px',
+    color: '#64748b',
+    fontStyle: 'italic',
+    padding: '6px 12px',
+    background: '#f1f5f9',
+    borderRadius: '6px',
+    border: '1px solid #e2e8f0'
   },
   slider: {
     width: '150px',
