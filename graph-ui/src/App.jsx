@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import OntologyDemo from './components/Ontology/OntologyDemo';
-import PaginationTest from './components/Ontology/PaginationTest';
 import VirtualizedGraphView from './components/Ontology/VirtualizedGraphView';
+import MedicalDiagnosisAI from './components/Ontology/MedicalDiagnosisAI';
 import './App.css';
 
 
@@ -26,16 +26,16 @@ function App() {
             🧬 Ontology Editor
           </button>
           <button 
-            className={`tab ${activeTab === 'pagination' ? 'active' : ''}`}
-            onClick={() => setActiveTab('pagination')}
+            className={`tab ${activeTab === 'medical' ? 'active' : ''}`}
+            onClick={() => setActiveTab('medical')}
           >
-            🧪 API Test
+            🏥 Medical AI Reasoner
           </button>
         </div>
         <div className="ontology-section">
           {activeTab === 'fisheye' && <VirtualizedGraphView />}
           {activeTab === 'ontology' && <OntologyDemo />}
-          {activeTab === 'pagination' && <PaginationTest />}
+          {activeTab === 'medical' && <MedicalDiagnosisAI />}
         </div>
       </div>
     </div>
