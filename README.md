@@ -1,403 +1,249 @@
-# WALLY Ontology Editor
+# WALLY — Ontology Editor + Medical AI Reasoner
 
-**Interactive Fish-Eye Graph Visualization for Large-Scale Ontologies**
+**Interactive Knowledge Graph Visualization with Open-Source LLM-Powered Diagnostics**
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-161.35.239.151-blue?style=flat-square)](http://161.35.239.151)
-[![Documentation](https://img.shields.io/badge/Docs-GitHub%20Pages-green?style=flat-square)](https://gpad1234.github.io/Startup-One-Wally-Clean/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-HTTPS-blue?style=flat-square&logo=nginx)](https://161.35.239.151)
+[![LLM Service](https://img.shields.io/badge/LLM-Llama%203.2%20%E2%80%A2%20Ollama-orange?style=flat-square)](https://161.35.239.151/llm/health)
+[![API](https://img.shields.io/badge/API-Flask%205002-green?style=flat-square)](https://161.35.239.151/api/ontology/health)
+[![Documentation](https://img.shields.io/badge/Docs-GitHub%20Pages-lightgrey?style=flat-square)](https://gpad1234.github.io/Startup-One-Wally-Clean/)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat-square&logo=github)](https://github.com/gpad1234/Startup-One-Wally-Clean)
 
 ---
 
 ## 📚 **[Full Documentation →](https://gpad1234.github.io/Startup-One-Wally-Clean/)**
 
-Complete documentation including features, architecture, deployment guides, and API reference is available at:
+---
 
-**https://gpad1234.github.io/Startup-One-Wally-Clean/**
+## What is WALLY?
+
+WALLY combines two complementary systems:
+
+1. **Ontology Editor** — A fish-eye interactive graph for visualizing and editing large-scale RDF/OWL knowledge graphs
+2. **Medical AI Reasoner** — A diagnostic reasoning engine using weighted ontology traversal + open-source LLM (Llama 3.2 via Ollama) for natural language symptom input
+
+Both systems are **$0 cost** — no paid AI APIs, fully open-source, deployed on a DigitalOcean Ubuntu droplet.
 
 ---
 
-WALLY is a next-generation ontology editor featuring:
-- **🎯 Fish-Eye Visualization** - Distance-based scaling for focus+context view
-- **🗺️ Interactive MiniMap** - Click, drag, and scroll navigation
-- **⚡ Real-Time Pagination** - BFS-based viewport loading
-- **🖱️ Click-to-Recenter** - Dynamic viewport updates
-- **🎨 Beautiful Design** - Gradient nodes, smooth animations
-- **📊 Scalable Architecture** - Designed for 1000+ node ontologies
+## 🌐 Live Deployment
 
-## 🚀 Quick Start
+| Service | URL | Notes |
+|---------|-----|-------|
+| **Frontend** | [https://161.35.239.151](https://161.35.239.151) | React app (HTTPS, self-signed cert) |
+| **Flask API** | [https://161.35.239.151/api/](https://161.35.239.151/api/) | Ontology REST API |
+| **LLM Service** | [https://161.35.239.151/llm/](https://161.35.239.151/llm/) | Ollama Llama 3.2 proxy |
+| **Health** | [https://161.35.239.151/health](https://161.35.239.151/health) | nginx health check |
+
+> **Note**: The self-signed cert will trigger a browser warning — click "Advanced → Proceed" to access the site.
+
+---
+
+## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
 - Python 3.12+
-- Node.js 18+
-- npm 10+
+- Node.js 18+ / npm 10+
 
-### Start Development
+### 1. Start the Flask Ontology API
 
 ```bash
-# Terminal 1: Start Flask API
+pip install -r requirements.txt
 python3 ontology_api.py
-
-# Terminal 2: Start React Frontend
-cd graph-ui
-npm install  # only needed first time
-npm run dev
+# Running on http://localhost:5002
 ```
 
-**Access the application:**
-- 🔵 Frontend: http://localhost:5173 (Fish-Eye Graph)
-- 🔴 Backend API: http://localhost:5002
+### 2. Start the React Frontend
 
-**Try it:**
-1. Click any node to recenter the fish-eye view
-2. Adjust the radius slider to control viewport depth
-3. Use the MiniMap to navigate and pan around the graph
+```bash
+cd graph-ui
+npm install      # first time only
+npm run dev
+# Running on http://localhost:5173
+```
 
-📖 **[Complete Setup Guide →](https://gpad1234.github.io/Startup-One-Wally-Clean/getting-started.html)**
+### 3. (Optional) Start the LLM Service locally
 
-## ✨ Key Features
+Requires Ollama installed and `llama3.2:1b` pulled:
 
-- ✅ **Fish-Eye Visualization** - Nodes scale by distance from center (1.8x → 0.5x)
-- ✅ **Interactive MiniMap** - Pannable, zoomable overview with click navigation
-- ✅ **Click-to-Recenter** - Any node becomes the new center
-- ✅ **Viewport Pagination** - BFS algorithm loads only visible nodes
-- ✅ **Bidirectional Traversal** - Navigate parent→child and child→parent
-- ✅ **Real-Time Updates** - Instant viewport fetching on interaction
-- ✅ **Beautiful Design** - Gradient nodes, glow effects, smooth animations
-- ✅ **Production Ready** - Deployed at http://161.35.239.151
-
-📖 **[Full Feature List →](https://gpad1234.github.io/Startup-One-Wally-Clean/features.html)**
+```bash
+ollama pull llama3.2:1b
+cd ubuntu-deploy && npm install
+node llm-service.js
+# Running on http://localhost:3001
+```
 
 ---
 
-## 📚 Documentation
+## ✨ Features
 
-### 📖 GitHub Pages Site
+### 🔬 Ontology Editor
 
-Complete documentation is available at: **https://gpad1234.github.io/Startup-One-Wally-Clean/**
+- **Fish-Eye Visualization** — Nodes scale by distance from center (1.8× center → 0.5× periphery)
+- **Interactive MiniMap** — Pannable overview with click-to-navigate
+- **Click-to-Recenter** — Any node becomes the new viewport center
+- **BFS Viewport Pagination** — Loads only visible nodes; scales to 1000+ node ontologies
+- **Bidirectional Traversal** — Navigate parent→child and child→parent edges
+- **RDF/OWL Support** — Full `rdflib` integration for ontology import/export
 
-| Documentation | Description |
-|---------------|-------------|
-| [**Home**](https://gpad1234.github.io/Startup-One-Wally-Clean/) | Project overview and quick links |
-| [**Features**](https://gpad1234.github.io/Startup-One-Wally-Clean/features.html) | Fish-eye visualization details |
-| [**Getting Started**](https://gpad1234.github.io/Startup-One-Wally-Clean/getting-started.html) | Installation and setup guide |
-| [**Development**](https://gpad1234.github.io/Startup-One-Wally-Clean/development.html) | Developer workflow and standards |
-| [**Deployment**](https://gpad1234.github.io/Startup-One-Wally-Clean/deployment.html) | Production deployment guide |
-| [**Architecture**](https://gpad1234.github.io/Startup-One-Wally-Clean/architecture.html) | System design and algorithms |
+### 🏥 Medical AI Reasoner
 
-### 📄 Additional Guides
+- **Weighted Ontology Reasoning** — Graph traversal scoring diseases against symptoms
+- **7 Diseases × 20 Symptoms × 14 Treatments** — Built-in medical knowledge graph
+- **Two input modes**:
+  - **Click Mode** — Select symptoms from an interactive panel
+  - **NLP Mode** — Type free-text ("I have a headache and fever") → LLM extracts symptoms
+- **Confidence Scoring** — Percentage-based match with reasoning path explanation
+- **Treatment Recommendations** — Suggested treatments per diagnosis
 
-- [ACTION_PLAN.md](ACTION_PLAN.md) - 4-week scaling roadmap
-- [DIGITALOCEAN_DEPLOY.md](DIGITALOCEAN_DEPLOY.md) - Complete deployment guide (923 lines)
-- [SESSION_2026_02_18.md](SESSION_2026_02_18.md) - Latest development session summary
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture documentation
+### 🤖 LLM Integration (Ollama + Llama 3.2)
+
+- **Model**: `llama3.2:1b` — 1.3 GB, runs on 1–2 GB RAM with swap
+- **Task**: Natural language symptom extraction
+- **Cost**: $0 — open-source, self-hosted, no API keys
+- **Privacy**: All data stays on your server
 
 ---
 
 ## 🏗️ Architecture
 
-### System Overview
-
 ```
-┌─────────────┐      HTTP/JSON      ┌──────────────┐      ┌─────────────┐
-│   React     │◄──────Relative──────►│  Flask API   │◄────►│  GraphDB    │
-│  Frontend   │      URLs: /api/*    │  Port 5002   │      │ (In-Memory) │
-│  Port 5173  │                      │              │      │             │
-│             │                      │  Pagination  │      │ C Libraries │
-│  Fish-Eye   │                      │  BFS Algo    │      │ libsimple   │
-│  ReactFlow  │                      │              │      │   db.so     │
-└─────────────┘                      └──────────────┘      └─────────────┘
+DigitalOcean Ubuntu 24.04 / 161.35.239.151
+
+  nginx HTTPS :443  (HTTP :80 -> HTTPS redirect)
+       |                   |                   |
+       v                   v                   v
+ wally-frontend     wally-ontology-api    medical-ai-llm
+ React 18 + Vite     Flask + rdflib       Node.js Express
+    port 5173            port 5002           port 3001
+       /                  /api/               /llm/
+                                                |
+                                                v
+                                         ollama :11434
+                                        llama3.2:1b model
+
+All four services run as systemd units (auto-restart on failure).
 ```
-
-### Fish-Eye Algorithm (BFS)
-
-```python
-def get_viewport(center_node, radius, limit):
-    # 1. BFS traversal from center
-    # 2. Track distance from center (0, 1, 2, ...)
-    # 3. Bidirectional: parent→child + child→parent
-    # 4. Return nodes with distance metadata
-    # 5. Frontend applies visual scaling by distance
-```
-
-**[Full Architecture Details →](https://gpad1234.github.io/Startup-One-Wally-Clean/architecture.html)**
 
 ---
 
-## 📊 Technology Stack
+## 📦 Technology Stack
 
-### Production Stack
-
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| Frontend | React 18 + Vite | UI framework + build tool |
-| Graph Viz | ReactFlow | Interactive graph rendering |
-| Backend | Flask + Python 3.12 | REST API server |
-| Ontology | rdflib 7.6.0 | RDF/OWL operations |
-| Database | GraphDB (In-Memory) | Triple store |
-| Data Structures | C Libraries | High-performance core |
-| Proxy | nginx | Reverse proxy + SSL |
-| Services | systemd | Process management |
-| Platform | DigitalOcean Ubuntu 24.04 | Cloud hosting |
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| Frontend | React + Vite | 18.2 / 5.x |
+| Graph Rendering | ReactFlow | 11.x |
+| Backend API | Flask + Python | 3.x / 3.12 |
+| Ontology | rdflib | 7.6.0 |
+| LLM Runtime | Ollama | latest |
+| LLM Model | Llama 3.2 | 1b (1.3 GB) |
+| LLM Proxy | Node.js + Express | 18 / 4.x |
+| Reverse Proxy | nginx | 1.24 |
+| SSL | Self-signed cert | 365-day |
+| Process Mgmt | systemd | — |
+| Hosting | DigitalOcean | Ubuntu 24.04 |
 
 ---
 
-```bash
-# Build C library
-make build-db
-
-# Run C test
-make run-db-test
-
-# Use Python wrapper
-python3 simple_db_python.py
-```
-
-## 📋 Project Structure
-
-## 📋 Project Structure
+## 📁 Key Files
 
 ```
-.
-├── graph_web_ui.py           # Flask web server for graph UI
-├── templates/
-│   └── graph_ui.html         # Interactive web interface
-├── graph_db.py               # Graph database implementation
-├── graph_examples.py         # 6 comprehensive examples
-├── simple_db.c               # In-memory hash table (C)
-├── simple_db_python.py       # Python wrapper (ctypes FFI)
-├── linked_list.h/c           # Singly linked list library
-├── doubly_linked_list.h/c    # Doubly linked list
-├── circular_linked_list.h/c  # Circular linked list
-├── driver.c                  # Interactive CLI driver
-├── test.c                    # Test programs
-├── Makefile                  # Build automation
-│
-├── GRAPH_DB_GUIDE.md         # Graph database API reference
-├── GRAPH_ALGORITHMS_GUIDE.md # BFS, DFS, Dijkstra theory
-├── ADJACENCY_LIST_GUIDE.md   # Graph representation guide
-├── WEB_UI_README.md          # Web UI documentation
-├── ARCHITECTURE.md           # System architecture
-├── SIMPLE_DB_SPEC.md         # Database specification
-└── README.md                 # This file
+WALLY-CLEAN/
+├── ontology_api.py                         # Flask REST API (port 5002)
+├── requirements.txt                        # Python dependencies
+├── graph-ui/
+│   ├── src/
+│   │   ├── App.jsx                         # Main router + tab navigation
+│   │   └── components/Ontology/
+│   │       ├── MedicalDiagnosisAI.jsx      # Medical AI Reasoner component
+│   │       ├── MedicalDiagnosisAI.css      # NLP mode styles
+│   │       └── OntologyEditor.jsx          # Fish-eye graph editor
+│   └── .env.local                          # VITE_LLM_SERVICE_URL config
+├── ubuntu-deploy/
+│   ├── llm-service.js                      # Node.js Ollama proxy (port 3001)
+│   └── deploy.sh                           # Automated deploy script
+├── MEDICAL_AI_TECH_SPEC.md                 # Algorithmic reasoning spec (827 lines)
+├── MEDICAL_AI_LLM_INTEGRATION.md          # LLM integration design (860 lines)
+└── DEPLOYMENT_GUIDE.md                    # Full deployment reference
 ```
 
-## Build System
+---
 
-The project uses GNU `make` for building. Compiled binaries are placed in the `bin/` directory, and object files in the `obj/` directory.
+## 🔌 API Reference
 
-### Building
+### Ontology API (`/api/`)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/ontology/health` | Service health |
+| GET | `/api/ontology/nodes` | List all nodes |
+| GET | `/api/ontology/viewport` | BFS viewport fetch |
+| POST | `/api/ontology/nodes` | Create node |
+| DELETE | `/api/ontology/nodes/{id}` | Delete node |
+
+### LLM Service (`/llm/`)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/llm/health` | Service + model status |
+| POST | `/llm/extract-symptoms` | NLP text → symptom array |
+| GET | `/llm/test` | Model smoke-test |
 
 ```bash
-# Build only the driver (default)
-make
-
-# Build both driver and test executables
-make build-all
-
-# Clean build artifacts
-make clean
-
-# Rebuild from scratch
-make rebuild
+# Example: extract symptoms from free text
+curl -sk -X POST https://161.35.239.151/llm/extract-symptoms \
+  -H "Content-Type: application/json" \
+  -d '{"text": "I have a fever, headache and feel very tired"}'
+# {"symptoms": ["fever", "headache", "fatigue"], "model": "llama3.2:1b"}
 ```
 
-### Running
+---
+
+## 🖥️ Server Management
 
 ```bash
-# Run the interactive driver
-make run
+# Connect
+ssh -i ~/.ssh/fisheye_rsa root@161.35.239.151
 
-# Run automated tests
-make run-test
+# Check all services
+systemctl status wally-frontend wally-ontology-api medical-ai-llm ollama
 
-# Show help
-make help
+# Restart / view logs
+systemctl restart medical-ai-llm
+journalctl -u medical-ai-llm -f
 ```
 
-### Manual Execution
+---
 
-```bash
-# Run driver directly
-./bin/linked_list_driver
+## 📚 Documentation
 
-# Run test directly
-./bin/test
-```
+| Document | Description |
+|----------|-------------|
+| [MEDICAL_AI_TECH_SPEC.md](MEDICAL_AI_TECH_SPEC.md) | Algorithmic reasoning architecture (827 lines) |
+| [MEDICAL_AI_LLM_INTEGRATION.md](MEDICAL_AI_LLM_INTEGRATION.md) | LLM integration design (860 lines) |
+| [UBUNTU_OLLAMA_DEPLOYMENT.md](UBUNTU_OLLAMA_DEPLOYMENT.md) | Ubuntu + Ollama setup guide |
+| [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) | Full deployment reference |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | System architecture |
+| [DIGITALOCEAN_DEPLOY.md](DIGITALOCEAN_DEPLOY.md) | DigitalOcean-specific guide |
 
-## Library API
+📖 **[GitHub Pages →](https://gpad1234.github.io/Startup-One-Wally-Clean/)**
 
-### Core Data Structure
+---
 
-```c
-typedef struct Node {
-    int data;
-    struct Node* next;
-} Node;
-```
+## ⚡ Performance Notes
 
-### Functions
+- **LLM cold start**: ~90s on 1 GB droplet (model loads from swap)
+- **LLM warm requests**: ~5–15s after first load
+- **Recommended**: Resize to 2 GB RAM ($12/mo) in DigitalOcean → cold start drops to ~2–3s
+- **Algorithmic reasoning**: instant — no LLM required for click-mode diagnosis
 
-#### Node Management
-- `Node* createNode(int data)` - Create a new node
-- `Node* insertEnd(Node* head, int data)` - Insert at end of list
-- `Node* insertBegin(Node* head, int data)` - Insert at beginning of list
-- `Node* deleteNode(Node* head, int data)` - Delete a node with given value
-- `void display(Node* head, const char* label)` - Print the list
-- `void freeList(Node* head)` - Free all memory
-
-#### Algorithms
-- `int search(Node* head, int target)` - Linear search (returns position or -1)
-- `int getListLength(Node* head)` - Get number of elements
-- `Node* bubbleSort(Node* head)` - Sort using bubble sort algorithm
-- `Node* mergeSort(Node* head)` - Sort using merge sort algorithm
-- `Node* reverseList(Node* head)` - Reverse the list in-place
-
-## Interactive Driver Features
-
-The driver provides a menu-driven interface with the following operations:
-
-1. **Insert at End** - Add element to the end of the list
-2. **Insert at Beginning** - Add element to the start of the list
-3. **Delete Node** - Remove an element by value
-4. **Display List** - Print all elements
-5. **Search Element** - Find element and return its position (0-indexed)
-6. **Get List Length** - Count total elements
-7. **Sort (Bubble Sort)** - Sort using bubble sort (non-destructive)
-8. **Sort (Merge Sort)** - Sort using merge sort (non-destructive)
-9. **Reverse List** - Reverse the list (non-destructive)
-10. **Clear List** - Remove all elements
-0. **Exit** - Quit the program
-
-### Example Session
-
-```
-$ make run
-Starting interactive driver...
-
-╔════════════════════════════════════════╗
-║  Welcome to Linked List Manager v1.0  ║
-╚════════════════════════════════════════╝
-
-========================================
-     Linked List Interactive Driver
-========================================
-1.  Insert at End
-2.  Insert at Beginning
-...
-0.  Exit
-========================================
-Enter your choice: 1
-Enter value to insert at end: 42
-✓ Element 42 inserted at end.
-Current List: 42 -> NULL
-```
-
-## Compilation Details
-
-### Compiler Flags
-- `-Wall -Wextra` - Enable all warnings
-- `-g` - Include debug symbols
-- `-O2` - Optimization level 2
-
-### Compilation Steps
-
-1. **Library object file**: `linked_list.c` → `obj/linked_list.o`
-2. **Driver object file**: `driver.c` → `obj/driver.o`
-3. **Driver executable**: Link `driver.o` + `linked_list.o` → `bin/linked_list_driver`
-
-## Algorithm Complexity
-
-### Search
-- **Time**: O(n)
-- **Space**: O(1)
-
-### Bubble Sort
-- **Best Case**: O(n)
-- **Average Case**: O(n²)
-- **Worst Case**: O(n²)
-- **Space**: O(1) - in-place
-
-### Merge Sort
-- **Best Case**: O(n log n)
-- **Average Case**: O(n log n)
-- **Worst Case**: O(n log n)
-- **Space**: O(n) - requires temporary lists
-
-### Reverse
-- **Time**: O(n)
-- **Space**: O(1) - in-place
-
-## Implementation Notes
-
-- **Memory Safety**: All allocations checked; proper deallocation via `freeList()`
-- **Non-destructive Operations**: Sort and reverse create temporary copies to preserve original list
-- **Error Handling**: Graceful handling of empty lists and invalid operations
-- **Clean Interface**: Library functions don't depend on I/O; presentation separated from logic
-
-## File Descriptions
-
-### linked_list.h
-Public API header file defining the Node structure and all function prototypes.
-
-### linked_list.c
-Complete implementation of all linked list operations. Includes both public API functions and internal helper functions (like `getMidNode()`, `merge()` for merge sort).
-
-### driver.c
-Interactive command-line interface allowing users to perform operations on the linked list. Reads user input and calls library functions.
-
-### test.c
-Simple automated test demonstrating all library functionality. Includes basic environment and calculation tests.
-
-### Makefile
-Build automation script with targets for compilation, execution, and cleanup. Features:
-- Automatic directory creation
-- Dependency tracking
-- Phony targets for convenience
-- Built-in help documentation
-
-## Testing
-
-The test program verifies:
-- Basic environment setup (C compilation works)
-- Simple arithmetic operations
-- Library can be built and linked correctly
-
-To extend testing, modify `test.c` with additional test cases.
-
-## Future Enhancements
-
-Possible additions:
-- Doubly linked list support
-- Circular linked list support
-- Stack/Queue implementations using linked lists
-- File I/O for list persistence
-- Performance benchmarking tools
-- Unit testing framework integration
-
-## Compilation Examples
-
-### Standard Build
-```bash
-$ make clean && make
-# or
-$ make rebuild
-```
-
-### Verbose Build
-```bash
-$ make verbose
-```
-
-### Quick Run
-```bash
-$ make run
-```
+---
 
 ## License
 
-This is an educational project for learning C programming and data structures.
+MIT — see [LICENSE](LICENSE)
 
 ---
 
-**Created**: November 2025
-**Author**: Educational C Programming Project
+**Last Updated**: February 2026
+**Stack**: React 18 · Flask · Ollama Llama 3.2 · nginx HTTPS · DigitalOcean Ubuntu 24.04
+
