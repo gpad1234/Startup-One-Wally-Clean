@@ -12,68 +12,38 @@ Technical deep-dive into WALLY's system design, algorithms, and scaling strategi
 ## System Overview
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                       User Browser                          │
-│  ┌──────────────────┐        ┌──────────────────┐          │
-│  │   React Frontend │        │    MiniMap       │          │
-│  │   (ReactFlow)    │◄──────►│   Navigation     │          │
-│  └────────┬─────────┘        └──────────────────┘          │
-└───────────┼─────────────────────────────────────────────────┘
-            │ HTTP/JSON
-            │ Relative URLs: /api/*
-┌───────────┼─────────────────────────────────────────────────┐
-│           ▼                                                  │
-│  ┌─────────────────┐                                        │
-│  │  nginx Proxy    │  Port 80/443                          │
-│  │  - Route /      │  Reverse Proxy                        │
-│  │  - Route /api/  │  SSL Termination                      │
-│  └────┬─────┬──────┘                                        │
-│       │     │                                                │
-│   ┌───┘     └────┐                                          │
-│   ▼              ▼                                           │
-│  Port 5173    Port 5002                                     │
-│  ┌──────┐    ┌───────────────────────────┐                 │
-│  │ Vite │    │    Flask REST API         │                 │
-│  │Preview│    │  - CORS configuration    │                 │
-│  └──────┘    │  - 3 Pagination endpoints│                 │
-│              │  - Error handling         │                 │
-│              └────────────┬──────────────┘                  │
-│                           │                                  │
-│                           ▼                                  │
-│              ┌────────────────────────┐                     │
-│              │  Service Layer         │                     │
-│              │  ┌──────────────────┐ │                     │
-│              │  │ GraphPagination  │ │                     │
-│              │  │ Service          │ │                     │
-│              │  │ - BFS Algorithm  │ │                     │
-│              │  │ - Fish-eye Logic │ │                     │
-│              │  └────────┬─────────┘ │                     │
-│              │           │            │                     │
-│              │  ┌────────▼─────────┐ │                     │
-│              │  │ Ontology Service │ │                     │
-│              │  │ - RDF Operations │ │                     │
-│              │  └────────┬─────────┘ │                     │
-│              └───────────┼────────────┘                     │
-│                          │                                   │
-│                          ▼                                   │
-│              ┌────────────────────────┐                     │
-│              │   GraphDB              │                     │
-│              │   - In-memory RDF      │                     │
-│              │   - Triple store       │                     │
-│              │   - C library backend  │                     │
-│              └────────────┬───────────┘                     │
-│                           │                                  │
-│                           ▼                                  │
-│              ┌────────────────────────┐                     │
-│              │   C Libraries          │                     │
-│              │   libsimpledb.so       │                     │
-│              │   - 26KB compiled      │                     │
-│              │   - High performance   │                     │
-│              └────────────────────────┘                     │
-│                                                              │
-│                   Production Server (Ubuntu 24.04)          │
-└──────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                    DigitalOcean Ubuntu 24.04                     │
+│                       161.35.239.151                             │
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │  nginx HTTPS :443  (HTTP :80 → HTTPS redirect)            │  │
+│  └──────┬──────────────────────┬──────────────────┬───────────┘  │
+│         │                      │                  │              │
+│         ▼                      ▼                  ▼              │
+│   wally-frontend        wally-ontology-api   medical-ai-llm      │
+│   React 18 + Vite         Flask + rdflib     Node.js Express     │
+│      port 5173               port 5002          port 3001        │
+│         /                    /api/               /llm/           │
+│                                                     │            │
+│  ┌───────────────────────┐                          ▼            │
+│  │   GraphDB (in-memory) │               ollama service          │
+│  │   - RDF triple store  │               port 11434              │
+│  │   - BFS pagination    │               llama3.2:1b model       │
+│  └───────────────────────┘               (1.3 GB + swap)        │
+│                                                                  │
+│  All four services managed by systemd (auto-restart on failure)  │
+└──────────────────────────────────────────────────────────────────┘
 ```
+
+### nginx Routes
+
+| Route | Backend | Service |
+|-------|---------|---------|
+| `/` | port 5173 | React frontend (wally-frontend) |
+| `/api/` | port 5002 | Flask ontology API (wally-ontology-api) |
+| `/llm/` | port 3001 | LLM proxy (medical-ai-llm) |
+| `/health` | nginx | Direct health check response |
 
 ---
 

@@ -3,50 +3,64 @@ layout: default
 title: Home
 ---
 
-# WALLY Ontology Editor
+# WALLY — Ontology Editor + Medical AI Reasoner
 
-**Interactive Fish-Eye Graph Visualization for Large-Scale Ontologies**
+**Interactive Knowledge Graph Visualization with Open-Source LLM-Powered Diagnostics**
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-161.35.239.151-blue?style=for-the-badge)](http://161.35.239.151)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-HTTPS-blue?style=for-the-badge&logo=nginx)](https://161.35.239.151)
+[![LLM](https://img.shields.io/badge/LLM-Llama%203.2%20%E2%80%A2%20Ollama-orange?style=for-the-badge)](https://161.35.239.151/llm/health)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge&logo=github)](https://github.com/gpad1234/Startup-One-Wally-Clean)
 
 ---
 
 ## 🚀 Overview
 
-WALLY is a next-generation ontology editor featuring an innovative **fish-eye visualization** that scales to thousands of nodes. Built with Python Flask, React, and ReactFlow, it provides an intuitive interface for exploring and navigating complex semantic graphs.
+WALLY combines two complementary AI systems — both **$0 cost**, open-source, and self-hosted:
+
+1. **Ontology Editor** — Fish-eye interactive graph for visualizing and editing large-scale RDF/OWL knowledge graphs
+2. **Medical AI Reasoner** — Diagnostic reasoning engine using weighted ontology traversal + Llama 3.2 LLM for natural language symptom input
 
 ### ✨ Key Features
 
+**Ontology Editor:**
 - **🎯 Fish-Eye Visualization** - Distance-based scaling with center-focus navigation
 - **🗺️ Interactive MiniMap** - Click, drag, and scroll for seamless exploration  
-- **⚡ Real-Time Pagination** - BFS-based viewport loading for instant performance
+- **⚡ BFS Viewport Pagination** - Loads only visible nodes for instant performance
 - **🖱️ Click-to-Recenter** - Dynamic viewport updates on node selection
-- **🎨 Beautiful Design** - Gradient nodes, smooth animations, intuitive controls
 - **📊 Scalable Architecture** - Designed for 1000+ node ontologies
-- **🔄 Bidirectional Traversal** - Navigate both parent→child and child→parent relationships
+
+**Medical AI Reasoner:**
+- **🏥 Weighted Ontology Reasoning** - Graph traversal scoring diseases vs. symptoms
+- **💬 NLP Mode** - Type free-text symptoms, Llama 3.2 extracts them automatically
+- **🖱️ Click Mode** - Select symptoms from an interactive visual panel
+- **📋 Confidence Scoring** - Percentage match with reasoning path explanation
+- **💊 Treatment Recommendations** - Suggested treatments per diagnosis
+
+**LLM Integration:**
+- **🤖 Ollama + Llama 3.2** - Free, self-hosted, runs on the same droplet
+- **🔒 Privacy-first** - Data never leaves your server
+- **💰 Zero cost** - No API keys or subscriptions required
 
 ---
 
 ## 🎬 Quick Start
-
-Get started with WALLY in seconds:
 
 ```bash
 # Clone repository
 git clone https://github.com/gpad1234/Startup-One-Wally-Clean.git
 cd Startup-One-Wally-Clean
 
-# Start backend API
+# Terminal 1: Start Flask API
 python3 ontology_api.py
 
-# In another terminal, start frontend
-cd graph-ui
-npm install
-npm run dev
+# Terminal 2: Start React frontend
+cd graph-ui && npm install && npm run dev
+
+# Terminal 3 (optional): Start LLM service
+cd ubuntu-deploy && node llm-service.js
 ```
 
-Visit **http://localhost:5173** to see the fish-eye graph in action!
+Visit **http://localhost:5173** — Ontology Editor and Medical AI Reasoner tabs both available.
 
 [📖 Full Getting Started Guide →](getting-started)
 
@@ -86,34 +100,36 @@ Visit **http://localhost:5173** to see the fish-eye graph in action!
 
 ## 🎯 Live Demo
 
-**Production:** [http://161.35.239.151](http://161.35.239.151)
+| Service | URL |
+|---------|-----|
+| **Frontend** | [https://161.35.239.151](https://161.35.239.151) |
+| **LLM Service** | [https://161.35.239.151/llm/health](https://161.35.239.151/llm/health) |
+| **API** | [https://161.35.239.151/api/ontology/health](https://161.35.239.151/api/ontology/health) |
 
-Try the interactive fish-eye graph visualization:
-1. Click any node to recenter the viewport
-2. Adjust the radius slider to control depth
-3. Use the MiniMap to pan and zoom
-4. Explore the demo ontology hierarchy
+> Self-signed cert: click "Advanced → Proceed" in browser.
+
+**Try the Ontology Editor:** click any node to recenter, adjust the radius slider, use the MiniMap.
+
+**Try the Medical AI Reasoner:** go to the 🏥 tab, click "💬 Describe with AI", type your symptoms in plain English.
 
 ---
 
 ## 🛠️ Technology Stack
 
 ### Backend
-- **Python 3.12** - Core runtime
-- **Flask** - REST API framework
+- **Python 3.12 + Flask** - REST API (port 5002)
 - **rdflib 7.6.0** - RDF/OWL ontology handling
-- **C Libraries** - High-performance data structures (libsimpledb.so)
+- **Node.js + Express** - LLM proxy service (port 3001)
+- **Ollama + Llama 3.2** - Open-source LLM (port 11434)
 
 ### Frontend
-- **React 18** - UI framework
-- **Vite** - Build tool and dev server
+- **React 18 + Vite** - UI framework and build tool
 - **ReactFlow** - Graph visualization library
-- **Tailwind CSS** - Styling (via inline styles)
 
 ### Infrastructure
-- **nginx** - Reverse proxy and static file serving
-- **systemd** - Service management
-- **DigitalOcean** - Cloud hosting (Ubuntu 24.04 LTS)
+- **nginx** - HTTPS reverse proxy (self-signed cert)
+- **systemd** - Service management (4 services, auto-restart)
+- **DigitalOcean Ubuntu 24.04** - Cloud hosting
 
 ---
 
@@ -185,6 +201,7 @@ We welcome contributions! See our [Development Guide](development) for:
 - **Feb 17, 2026** - Initial fish-eye POC implemented
 - **Feb 18, 2026** - Production deployment to DigitalOcean
 - **Feb 19, 2026** - Interactive MiniMap navigation added
+- **Feb 20, 2026** - Medical AI Reasoner + Ollama LLM NLP integration deployed
 - **Coming Soon** - Search, filters, 1000+ node scaling tests
 
 [📖 View Full Roadmap →](../ACTION_PLAN.md)
@@ -194,7 +211,8 @@ We welcome contributions! See our [Development Guide](development) for:
 ## 📬 Contact & Links
 
 - **GitHub:** [gpad1234/Startup-One-Wally-Clean](https://github.com/gpad1234/Startup-One-Wally-Clean)
-- **Live Demo:** [http://161.35.239.151](http://161.35.239.151)
+- **Live Demo:** [https://161.35.239.151](https://161.35.239.151)
+- **LLM Health:** [https://161.35.239.151/llm/health](https://161.35.239.151/llm/health)
 - **Documentation:** [GitHub Pages](https://gpad1234.github.io/Startup-One-Wally-Clean/)
 
 ---

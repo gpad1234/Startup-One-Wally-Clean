@@ -5,7 +5,7 @@ title: Features
 
 # 🎨 Features
 
-WALLY Ontology Editor combines innovative visualization techniques with powerful graph navigation tools. Here's a comprehensive overview of all features.
+WALLY combines ontology graph visualization with an AI-powered medical diagnostic reasoner. Here's a comprehensive overview of all features.
 
 ---
 
@@ -272,6 +272,71 @@ Features planned for future releases:
 
 ---
 
+## 🏥 Medical AI Reasoner
+
+**Version 2.0** — Added February 20, 2026
+
+An AI-powered diagnostic reasoning engine that uses weighted graph traversal over a medical knowledge ontology to perform differential diagnosis.
+
+### How It Works
+
+```
+User Input (symptoms)
+        │
+        ├──── Click Mode: select from symptom panel
+        │
+        └──── NLP Mode: type free text
+                    │
+                    ▼
+            Llama 3.2 (Ollama)
+            POST /llm/extract-symptoms
+                    │
+                    ▼
+            Symptom name → ontology ID mapping
+        │
+        ▼
+Weighted Graph Traversal  O(D × S)
+- For each Disease D:
+  - For each Symptom S present:
+    - score += edge_weight(D, S)
+- Normalize to percentage confidence
+        │
+        ▼
+Ranked Diagnoses + Treatment Recommendations
+```
+
+### Knowledge Graph
+
+| Entity | Count |
+|--------|-------|
+| Diseases | 7 (flu, cold, COVID-19, strep, migraine, pneumonia, allergy) |
+| Symptoms | 20 (fever, cough, headache, fatigue, ...) |
+| Treatments | 14 (rest, fluids, antibiotics, antihistamines, ...) |
+| Edge weights | 0.1 – 0.95 (symptom specificity) |
+
+### Input Modes
+
+**Click Mode** — Interactive symptom selection:
+1. Open the 🏥 Medical AI Reasoner tab
+2. Click symptoms in the panel to toggle them on/off
+3. Click "Diagnose" to run the reasoning algorithm instantly
+
+**NLP Mode** — Natural language input via LLM:
+1. Click "💬 Describe with AI" toggle
+2. Type free text: *"I've had a fever and bad cough for 3 days, feel exhausted"*
+3. Click "Extract Symptoms" → Llama 3.2 returns symptom array
+4. Symptoms are mapped to ontology IDs and diagnosis runs automatically
+
+### LLM Integration Details
+
+- **Model**: `llama3.2:1b` hosted via Ollama on the same droplet
+- **Endpoint**: `POST https://161.35.239.151/llm/extract-symptoms`
+- **Response**: `{"symptoms": ["fever", "cough", "fatigue"], "model": "llama3.2:1b"}`
+- **Cold start**: ~90s (loads from swap on 1 GB droplet); warm: ~5–15s
+- **Cost**: $0 — no API keys, fully self-hosted
+
+---
+
 ## 📖 Feature Guides
 
 Detailed documentation for each feature:
@@ -293,10 +358,13 @@ Detailed documentation for each feature:
 | Radius Control | ✅ Live | 1.0 | 1-5 hops |
 | BFS Pagination | ✅ Live | 1.0 | Backend algorithm |
 | Bidirectional Traversal | ✅ Live | 1.0 | Full graph navigation |
-| Search Bar | 🚧 Planned | 1.2 | Week 1 |
-| Node Filters | 🚧 Planned | 1.2 | Week 1 |
-| Dark Mode | 🚧 Planned | 1.3 | Week 2 |
-| 1000+ Node Support | 🚧 Planned | 2.0 | Week 3-4 |
+| Medical AI Reasoner | ✅ Live | 2.0 | Added Feb 20 |
+| NLP Symptom Extraction | ✅ Live | 2.0 | Llama 3.2 via Ollama |
+| Treatment Recommendations | ✅ Live | 2.0 | Per-diagnosis suggestions |
+| Search Bar | 🚧 Planned | 2.1 | Week 1 |
+| Node Filters | 🚧 Planned | 2.1 | Week 1 |
+| Dark Mode | 🚧 Planned | 2.2 | Week 2 |
+| 1000+ Node Support | 🚧 Planned | 3.0 | Week 3-4 |
 
 ---
 
