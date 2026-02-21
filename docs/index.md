@@ -73,25 +73,25 @@ Visit **http://localhost:5173** — Ontology Editor and Medical AI Reasoner tabs
 <div style="border: 2px solid #3b82f6; border-radius: 8px; padding: 20px; background: #f0f9ff;">
 <h3>🎨 Features</h3>
 <p>Explore the innovative fish-eye visualization and interactive features</p>
-<a href="features.md">Learn More →</a>
+<a href="features">Learn More →</a>
 </div>
 
 <div style="border: 2px solid #10b981; border-radius: 8px; padding: 20px; background: #f0fdf4;">
 <h3>💻 Development</h3>
 <p>Development workflow, architecture, and contribution guidelines</p>
-<a href="development.md">Learn More →</a>
+<a href="development">Learn More →</a>
 </div>
 
 <div style="border: 2px solid #f59e0b; border-radius: 8px; padding: 20px; background: #fffbeb;">
 <h3>🚀 Deployment</h3>
 <p>Complete guide for deploying to DigitalOcean or other platforms</p>
-<a href="deployment.md">Learn More →</a>
+<a href="deployment">Learn More →</a>
 </div>
 
 <div style="border: 2px solid #8b5cf6; border-radius: 8px; padding: 20px; background: #faf5ff;">
 <h3>🏗️ Architecture</h3>
 <p>System design, pagination algorithm, and scaling strategies</p>
-<a href="architecture.md">Learn More →</a>
+<a href="architecture">Learn More →</a>
 </div>
 
 </div>
