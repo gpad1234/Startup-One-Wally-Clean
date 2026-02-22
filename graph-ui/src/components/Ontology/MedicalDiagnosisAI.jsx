@@ -359,6 +359,14 @@ const MedicalDiagnosisAI = () => {
           {Object.keys(medicalOntology.symptoms).length} symptoms &nbsp;·&nbsp;
           {Object.keys(medicalOntology.treatments).length} treatments
         </div>
+      </div>
+
+      <div className="medical-content">
+        {/* Symptom Selection */}
+        <div className="symptom-panel">
+          <div className="symptom-panel-header">
+            <h2>Select Symptoms</h2>
+            <div className="input-mode-toggle">
               <button
                 className={`mode-btn ${!nlpMode ? 'active' : ''}`}
                 onClick={() => { setNlpMode(false); setNlpError(null); setNlpStatus(null); }}
