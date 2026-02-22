@@ -643,6 +643,7 @@ def get_medical_graph():
     Returns: { classes: [...], instances: [...], source, summary }
     """
     from rdflib import Graph as RDFGraph, Namespace, RDF, RDFS, OWL, Literal, BNode
+    import os
 
     TTL_PATH = os.path.join(os.path.dirname(__file__), 'sample_data', 'medical_ontology.ttl')
     if not os.path.exists(TTL_PATH):
