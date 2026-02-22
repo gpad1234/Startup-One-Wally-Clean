@@ -20,39 +20,28 @@ const OntologyDemo = () => {
   const [exporting, setExporting] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Load all classes and instances for graph view
+  // Load classes + instances from the medical ontology TTL via Flask API
   useEffect(() => {
     const loadData = async () => {
       setLoadingData(true);
       try {
-        // Use mock data for now until backend issues resolved
+        const res = await fetch('/api/ontology/medical/graph');
+        const json = await res.json();
+        if (json.data) {
+          setClasses(json.data.classes || mockClasses);
+          setInstances(json.data.instances || mockInstances);
+          console.log('[OntologyDemo] Loaded from API:',
+            json.data.summary?.class_count, 'classes,',
+            json.data.summary?.instance_count, 'instances');
+        } else {
+          // API returned unexpected shape — fall back
+          setClasses(mockClasses);
+          setInstances(mockInstances);
+        }
+      } catch (error) {
+        console.warn('[OntologyDemo] API unavailable, using mock data:', error.message);
         setClasses(mockClasses);
         setInstances(mockInstances);
-        
-        /* Backend integration (uncomment when API is fixed):
-        const classesResponse = await getAllClasses();
-        const classesData = classesResponse.data.data || [];
-        
-        // Get full class info for each class
-        const fullClasses = await Promise.all(
-          classesData.map(async (cls) => {
-            try {
-              const fullResponse = await import('../../services/ontologyApi').then(api => 
-                api.getClassFull(cls.id)
-              );
-              return fullResponse.data.data;
-            } catch (error) {
-              console.warn(`Failed to load full class data for ${cls.id}:`, error);
-              return cls;
-            }
-          })
-        );
-        
-        setClasses(fullClasses);
-        setInstances([]); // Instances endpoint doesn't exist yet
-        */
-      } catch (error) {
-        console.error('Failed to load ontology data:', error);
       } finally {
         setLoadingData(false);
       }

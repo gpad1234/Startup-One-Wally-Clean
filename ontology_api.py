@@ -635,6 +635,134 @@ def get_medical_ontology():
         return error_response(f'Failed to parse medical_ontology.ttl: {str(e)}', 500)
 
 
+@app.route('/api/ontology/medical/graph', methods=['GET'])
+def get_medical_graph():
+    """
+    Parse medical_ontology.ttl and return OWL classes + individuals
+    in the shape expected by GraphView / OntologyDemo.
+    Returns: { classes: [...], instances: [...], source, summary }
+    """
+    from rdflib import Graph as RDFGraph, Namespace, RDF, RDFS, OWL, Literal, BNode
+
+    TTL_PATH = os.path.join(os.path.dirname(__file__), 'sample_data', 'medical_ontology.ttl')
+    if not os.path.exists(TTL_PATH):
+        return error_response('medical_ontology.ttl not found', 404)
+
+    try:
+        g = RDFGraph()
+        g.parse(TTL_PATH, format='turtle')
+
+        # Build prefix → namespace map for compact IDs
+        ns_map = {str(ns): prefix for prefix, ns in g.namespaces() if prefix}
+
+        def compact_id(uri):
+            s = str(uri)
+            for ns_str, prefix in ns_map.items():
+                if s.startswith(ns_str):
+                    return f"{prefix}:{s[len(ns_str):]}"
+            return s
+
+        def get_label(uri):
+            for lbl in g.objects(uri, RDFS.label):
+                return str(lbl)
+            s = str(uri)
+            return s.split('#')[-1].split('/')[-1]
+
+        # ---- Per-class property definitions (domain knowledge) ----
+        class_props = {
+            'med:Disease': [
+                {'id': 'med:id',          'label': 'id',          'required': True,  'inherited': False},
+                {'id': 'med:severity',    'label': 'severity',    'required': False, 'inherited': False},
+                {'id': 'med:description', 'label': 'description', 'required': False, 'inherited': False},
+                {'id': 'med:hasTreatment','label': 'hasTreatment','required': False, 'inherited': False},
+                {'id': 'med:hasSymptom',  'label': 'hasSymptom',  'required': False, 'inherited': False},
+            ],
+            'med:Symptom': [
+                {'id': 'med:id',               'label': 'id',               'required': True,  'inherited': False},
+                {'id': 'med:hasSymptomWeight',  'label': 'hasSymptomWeight', 'required': False, 'inherited': False},
+            ],
+            'med:Treatment': [
+                {'id': 'med:id',       'label': 'id',       'required': True,  'inherited': False},
+                {'id': 'med:treatType','label': 'treatType','required': False, 'inherited': False},
+            ],
+            'med:HierarchyNode': [
+                {'id': 'med:id',    'label': 'id',    'required': True,  'inherited': False},
+                {'id': 'med:parent','label': 'parent','required': False, 'inherited': False},
+            ],
+        }
+
+        # ---- Build class list ----
+        owl_class_uris = list(g.subjects(RDF.type, OWL.Class))
+
+        classes = [{
+            'id': 'owl:Thing',
+            'label': 'Thing',
+            'description': 'Root of all OWL classes',
+            'parent_classes': [],
+            'direct_properties': [],
+            'all_properties': []
+        }]
+
+        for cls_uri in owl_class_uris:
+            if isinstance(cls_uri, BNode):
+                continue
+            cid = compact_id(cls_uri)
+            parents = []
+            for sup in g.objects(cls_uri, RDFS.subClassOf):
+                if not isinstance(sup, BNode):
+                    parents.append(compact_id(sup))
+            if not parents:
+                parents = ['owl:Thing']
+
+            desc = next((str(d) for d in g.objects(cls_uri, RDFS.comment)), None)
+            direct_props = class_props.get(cid, [])
+
+            classes.append({
+                'id': cid,
+                'label': get_label(cls_uri),
+                'description': desc or f'A {get_label(cls_uri)} in the medical ontology',
+                'parent_classes': parents,
+                'direct_properties': direct_props,
+                'all_properties': direct_props,
+            })
+
+        # ---- Build instance list ----
+        instances = []
+        for cls_uri in owl_class_uris:
+            if isinstance(cls_uri, BNode):
+                continue
+            cid = compact_id(cls_uri)
+            for inst_uri in g.subjects(RDF.type, cls_uri):
+                if isinstance(inst_uri, BNode):
+                    continue
+                iid = compact_id(inst_uri)
+                ilabel = get_label(inst_uri)
+                props = {}
+                for pred, obj in g.predicate_objects(inst_uri):
+                    if pred in (RDF.type, RDFS.label):
+                        continue
+                    pid = compact_id(pred)
+                    if isinstance(obj, BNode):
+                        for bp, bv in g.predicate_objects(obj):
+                            props[f"{pid}.{compact_id(bp)}"] = str(bv)
+                    elif isinstance(obj, Literal):
+                        props[pid] = str(obj)
+                    else:
+                        props[pid] = compact_id(obj)
+                instances.append({'id': iid, 'label': ilabel, 'classId': cid, 'properties': props})
+
+        return jsonify(success_response({
+            'classes':   classes,
+            'instances': instances,
+            'source':    'sample_data/medical_ontology.ttl',
+            'summary':   {'class_count': len(classes), 'instance_count': len(instances)}
+        }, 'Medical ontology graph loaded successfully'))
+
+    except Exception as e:
+        logger.error(f"Error parsing medical ontology graph: {e}", exc_info=True)
+        return error_response(f'Failed to build medical graph: {str(e)}', 500)
+
+
 # ============================================================================
 # Reasoning & Analysis Endpoints
 # ============================================================================
