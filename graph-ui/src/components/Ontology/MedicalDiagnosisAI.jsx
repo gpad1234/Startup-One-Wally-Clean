@@ -14,8 +14,8 @@ const LLM_SERVICE_URL = import.meta.env.VITE_LLM_SERVICE_URL || 'https://161.35.
  * - Explains reasoning path through knowledge graph
  */
 
-// Medical Ontology Knowledge Base
-const MEDICAL_ONTOLOGY = {
+// Fallback knowledge base used when the API is unreachable
+const FALLBACK_ONTOLOGY = {
   diseases: {
     'resp:CommonCold': {
       label: 'Common Cold',
@@ -128,6 +128,25 @@ const MEDICAL_ONTOLOGY = {
 };
 
 const MedicalDiagnosisAI = () => {
+  // Ontology loaded from Flask API (falls back to hardcoded if API is down)
+  const [medicalOntology, setMedicalOntology] = useState(FALLBACK_ONTOLOGY);
+  const [ontologySource, setOntologySource] = useState('built-in');
+
+  useEffect(() => {
+    fetch('/api/ontology/medical')
+      .then(r => r.json())
+      .then(json => {
+        if (json.data) {
+          setMedicalOntology(json.data);
+          setOntologySource(json.data.source || 'api');
+          console.log('[MedicalAI] Ontology loaded from API:', Object.keys(json.data.diseases).length, 'diseases');
+        }
+      })
+      .catch(err => {
+        console.warn('[MedicalAI] API unavailable, using built-in ontology:', err.message);
+      });
+  }, []);
+
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [diagnosis, setDiagnosis] = useState(null);
   const [reasoning, setReasoning] = useState(null);
@@ -138,7 +157,7 @@ const MedicalDiagnosisAI = () => {
   const [nlpError, setNlpError] = useState(null);
   const [nlpStatus, setNlpStatus] = useState(null);
 
-  const allSymptoms = Object.entries(MEDICAL_ONTOLOGY.symptoms).map(([id, data]) => ({
+  const allSymptoms = Object.entries(medicalOntology.symptoms).map(([id, data]) => ({
     id,
     label: data.label
   }));
@@ -175,13 +194,13 @@ const MedicalDiagnosisAI = () => {
     const diseaseScores = {};
     const matchDetails = {};
 
-    Object.entries(MEDICAL_ONTOLOGY.diseases).forEach(([diseaseId, disease]) => {
+    Object.entries(medicalOntology.diseases).forEach(([diseaseId, disease]) => {
       let score = 0;
       let matchedSymptoms = [];
       let totalWeight = 0;
 
       symptoms.forEach(symptomId => {
-        const symptomData = MEDICAL_ONTOLOGY.symptoms[symptomId];
+        const symptomData = medicalOntology.symptoms[symptomId];
         if (symptomData.weights[diseaseId]) {
           const weight = symptomData.weights[diseaseId];
           score += weight;
@@ -213,7 +232,7 @@ const MedicalDiagnosisAI = () => {
 
     // Build reasoning explanation
     const topDisease = sortedDiseases[0];
-    const diseaseData = MEDICAL_ONTOLOGY.diseases[topDisease[0]];
+    const diseaseData = medicalOntology.diseases[topDisease[0]];
     
     // Get inheritance chain
     const inheritanceChain = getInheritanceChain(diseaseData.parent);
@@ -244,7 +263,7 @@ const MedicalDiagnosisAI = () => {
     return {
       diagnosis: sortedDiseases.map(([diseaseId, score]) => ({
         id: diseaseId,
-        ...MEDICAL_ONTOLOGY.diseases[diseaseId],
+        ...medicalOntology.diseases[diseaseId],
         confidence: score,
         matchDetails: matchDetails[diseaseId]
       })),
@@ -262,7 +281,7 @@ const MedicalDiagnosisAI = () => {
     let currentId = parentId;
     
     while (currentId && currentId !== 'owl:Disease') {
-      const parent = MEDICAL_ONTOLOGY.hierarchy[currentId];
+      const parent = medicalOntology.hierarchy[currentId];
       if (parent) {
         chain.push(parent.label);
         currentId = parent.parent;
@@ -289,11 +308,11 @@ const MedicalDiagnosisAI = () => {
       const data = await res.json();
       if (data.success && data.symptomIds?.length > 0) {
         // Match returned IDs to known ontology symptom IDs
-        const validIds = Object.keys(MEDICAL_ONTOLOGY.symptoms);
+        const validIds = Object.keys(medicalOntology.symptoms);
         const matched = data.symptomIds.filter(id => validIds.includes(id));
         // Also try matching by label
         const byLabel = data.extracted.flatMap(name => {
-          const found = Object.entries(MEDICAL_ONTOLOGY.symptoms).find(
+          const found = Object.entries(medicalOntology.symptoms).find(
             ([, s]) => s.label.toLowerCase() === name.toLowerCase()
           );
           return found ? [found[0]] : [];
@@ -334,14 +353,12 @@ const MedicalDiagnosisAI = () => {
         <div className="disclaimer">
           ⚠️ Educational demonstration only - Not for actual medical diagnosis
         </div>
-      </div>
-
-      <div className="medical-content">
-        {/* Symptom Selection */}
-        <div className="symptom-panel">
-          <div className="symptom-panel-header">
-            <h2>Select Symptoms</h2>
-            <div className="input-mode-toggle">
+        <div className="ontology-source">
+          📂 Knowledge source: <code>{ontologySource}</code> &nbsp;·&nbsp;
+          {Object.keys(medicalOntology.diseases).length} diseases &nbsp;·&nbsp;
+          {Object.keys(medicalOntology.symptoms).length} symptoms &nbsp;·&nbsp;
+          {Object.keys(medicalOntology.treatments).length} treatments
+        </div>
               <button
                 className={`mode-btn ${!nlpMode ? 'active' : ''}`}
                 onClick={() => { setNlpMode(false); setNlpError(null); setNlpStatus(null); }}
@@ -474,7 +491,7 @@ const MedicalDiagnosisAI = () => {
                       <strong>Recommended Actions:</strong>
                       <ul className="treatment-list">
                         {disease.treatments.map(treatmentId => {
-                          const treatment = MEDICAL_ONTOLOGY.treatments[treatmentId];
+                          const treatment = medicalOntology.treatments[treatmentId];
                           return (
                             <li key={treatmentId} className={`treatment-item ${treatment.type}`}>
                               {treatment.label}

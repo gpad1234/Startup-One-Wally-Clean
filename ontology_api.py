@@ -514,6 +514,128 @@ def get_class_instances(class_id: str):
 
 
 # ============================================================================
+# Medical AI Ontology Endpoint
+# ============================================================================
+
+@app.route('/api/ontology/medical', methods=['GET'])
+def get_medical_ontology():
+    """
+    Parse sample_data/medical_ontology.ttl and return the knowledge graph
+    as JSON in the shape expected by MedicalDiagnosisAI.jsx:
+    { diseases, symptoms, treatments, hierarchy }
+    """
+    import os
+    from rdflib import Graph, Namespace, RDF, RDFS, Literal
+    from rdflib.namespace import OWL
+
+    TTL_PATH = os.path.join(os.path.dirname(__file__), 'sample_data', 'medical_ontology.ttl')
+    if not os.path.exists(TTL_PATH):
+        return error_response('medical_ontology.ttl not found', 404)
+
+    try:
+        g = Graph()
+        g.parse(TTL_PATH, format='turtle')
+
+        MED   = Namespace('http://wally.io/medical#')
+        RDFS_LABEL = RDFS.label
+
+        def str_val(node):
+            return str(node) if node else None
+
+        def get_id(subject):
+            ids = list(g.objects(subject, MED.id))
+            return str_val(ids[0]) if ids else None
+
+        def get_label(subject):
+            labels = list(g.objects(subject, RDFS_LABEL))
+            return str_val(labels[0]) if labels else None
+
+        # ---- Symptoms -------------------------------------------------------
+        symptoms = {}
+        for s in g.subjects(RDF.type, MED.Symptom):
+            sid = get_id(s)
+            if not sid:
+                continue
+            label = get_label(s)
+            weights = {}
+            for bnode in g.objects(s, MED.hasSymptomWeight):
+                disease_ids = list(g.objects(bnode, MED.weightDisease))
+                weight_vals = list(g.objects(bnode, MED.weightValue))
+                if disease_ids and weight_vals:
+                    weights[str_val(disease_ids[0])] = float(weight_vals[0])
+            symptoms[sid] = {'label': label, 'weights': weights}
+
+        # ---- Treatments -----------------------------------------------------
+        treatments = {}
+        for s in g.subjects(RDF.type, MED.Treatment):
+            tid = get_id(s)
+            if not tid:
+                continue
+            treat_types = list(g.objects(s, MED.treatType))
+            treatments[tid] = {
+                'label': get_label(s),
+                'type': str_val(treat_types[0]) if treat_types else 'general'
+            }
+
+        # ---- Diseases -------------------------------------------------------
+        diseases = {}
+        for s in g.subjects(RDF.type, MED.Disease):
+            did = get_id(s)
+            if not did:
+                continue
+            parents   = list(g.objects(s, MED.parent))
+            severities = list(g.objects(s, MED.severity))
+            descs     = list(g.objects(s, MED.description))
+
+            # hasSymptom -> list of symptom compact IDs
+            sym_ids = []
+            for sym_node in g.objects(s, MED.hasSymptom):
+                sym_id = get_id(sym_node)
+                if sym_id:
+                    sym_ids.append(sym_id)
+
+            # hasTreatment -> list of treatment compact IDs
+            treat_ids = []
+            for t_node in g.objects(s, MED.hasTreatment):
+                t_id = get_id(t_node)
+                if t_id:
+                    treat_ids.append(t_id)
+
+            diseases[did] = {
+                'label':       get_label(s),
+                'parent':      str_val(parents[0]) if parents else None,
+                'severity':    str_val(severities[0]) if severities else 'moderate',
+                'description': str_val(descs[0]) if descs else '',
+                'symptoms':    sym_ids,
+                'treatments':  treat_ids,
+            }
+
+        # ---- Hierarchy -------------------------------------------------------
+        hierarchy = {}
+        for s in g.subjects(RDF.type, MED.HierarchyNode):
+            hid = get_id(s)
+            if not hid:
+                continue
+            parents = list(g.objects(s, MED.parent))
+            hierarchy[hid] = {
+                'label':  get_label(s),
+                'parent': str_val(parents[0]) if parents else 'owl:Disease'
+            }
+
+        return jsonify(success_response({
+            'diseases':   diseases,
+            'symptoms':   symptoms,
+            'treatments': treatments,
+            'hierarchy':  hierarchy,
+            'source':     'sample_data/medical_ontology.ttl',
+        }, 'Medical ontology loaded successfully'))
+
+    except Exception as e:
+        logger.error(f"Error parsing medical ontology: {e}", exc_info=True)
+        return error_response(f'Failed to parse medical_ontology.ttl: {str(e)}', 500)
+
+
+# ============================================================================
 # Reasoning & Analysis Endpoints
 # ============================================================================
 
