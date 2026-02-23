@@ -17,21 +17,19 @@ Complete guide for deploying WALLY to production. Covers DigitalOcean deployment
 - SSH key configured
 - Domain name (optional)
 
-### 1-Command Deployment
+### Deploy via Git Pull
+
+On the server, after initial setup (see Manual Deployment below):
 
 ```bash
-# Run automated deployment script
-./scripts/deploy_to_droplet.sh
+cd /opt/wally-clean
+git pull
+source .venv/bin/activate && pip install -r requirements.txt
+cd graph-ui && npm run build && cd ..
+sudo systemctl restart wally-frontend wally-ontology-api medical-ai-llm
 ```
 
-This script handles:
-- ✅ SSH connection
-- ✅ Git clone/pull
-- ✅ Dependency installation
-- ✅ C library compilation
-- ✅ Frontend build
-- ✅ Service configuration
-- ✅ nginx setup
+All four systemd services restart automatically on server reboot.
 
 ---
 
@@ -42,10 +40,12 @@ This script handles:
 1. Visit [DigitalOcean](https://www.digitalocean.com/)
 2. Create new droplet:
    - **Image:** Ubuntu 24.04 LTS
-   - **Plan:** Basic ($6/month - 1GB RAM, 1 vCPU)
+   - **Plan:** Basic ($12–18/month — **minimum 2GB RAM** required for Ollama/Llama 3.2; 4GB recommended)
    - **Datacenter:** Choose closest to your users
    - **Authentication:** SSH key (recommended)
    - **Hostname:** wally-production
+
+   > ⚠️ **RAM note**: Ollama with `llama3.2:1b` needs ~1.3GB RAM + swap. A 1GB droplet will OOM. The live server at 161.35.239.151 uses a 2GB droplet with 2GB swap configured.
 
 3. Note your droplet's IP address (e.g., `161.35.239.151`)
 

@@ -44,10 +44,6 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Build C libraries (if needed)
-cd src/core
-make
-cd ../..
 
 # Start API server
 python3 ontology_api.py
@@ -67,14 +63,27 @@ npm run dev
 
 The frontend will start on **http://localhost:5173**
 
-### 4. Open Your Browser
+### 4. Start the LLM Service *(for NLP symptom extraction)*
+
+In a third terminal (requires [Ollama](https://ollama.com/) installed):
+
+```bash
+ollama pull llama3.2:1b
+cd ubuntu-deploy && npm install && node llm-service.js
+# Running on http://localhost:3001
+```
+
+> Skip this step to use **Click Mode** only — NLP mode will show a connection error but the rest of the app works fine.
+
+### 5. Open Your Browser
 
 Visit **http://localhost:5173** and you'll see:
 
 ✅ Fish-eye graph visualization  
 ✅ Interactive MiniMap in bottom-right  
 ✅ Radius control slider  
-✅ Demo ontology loaded (7 nodes)
+✅ Medical AI Reasoner tab (🏥)  
+✅ DOID badges, ICD-10 codes, and MeSH references on each disease card
 
 ---
 
@@ -94,12 +103,24 @@ owl:Thing (root)
 └── demo:email (property)
 ```
 
-### Try Basic Interactions
+### Try the Ontology Editor
 
-1. **Click any node** - Watch the graph recenter with fish-eye effect
-2. **Adjust radius slider** - Change viewport depth (1-5 hops)
-3. **Use MiniMap** - Click, drag, or scroll to navigate
-4. **Observe scaling** - Notice how node sizes change with distance
+1. **Click any node** — Watch the graph recenter with fish-eye effect
+2. **Adjust radius slider** — Change viewport depth (1-5 hops)
+3. **Use MiniMap** — Click, drag, or scroll to navigate
+4. **Observe scaling** — Notice how node sizes change with distance
+
+### Try the Medical AI Reasoner
+
+1. Click the **🏥 Medical AI Reasoner** tab
+2. **Click Mode** — Select symptoms from the visual panel, click **Diagnose**
+3. **NLP Mode** — Click "💬 Describe with AI", type free-text symptoms in plain English
+4. Each result card shows:
+   - Confidence percentage + reasoning trace
+   - Official **DOID badge** (links to disease-ontology.org)
+   - **ICD-10-CM code** (e.g., J18.9, J11.1, I10)
+   - **MeSH reference** and verbatim clinical definition
+   - Suggested treatments and severity level
 
 ---
 

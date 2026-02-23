@@ -143,10 +143,10 @@ Visit **http://localhost:5173** — Ontology Editor and Medical AI Reasoner tabs
 
 ## 📖 Key Documentation
 
-- **[ACTION_PLAN.md](../ACTION_PLAN.md)** - 4-week scaling roadmap
-- **[DIGITALOCEAN_DEPLOY.md](../DIGITALOCEAN_DEPLOY.md)** - Complete deployment guide (923 lines)
-- **[SESSION_2026_02_18.md](../SESSION_2026_02_18.md)** - Latest development session summary
-- **[ARCHITECTURE.md](../ARCHITECTURE.md)** - System architecture documentation
+- **[Getting Started](getting-started)** - Local dev setup in 5 minutes
+- **[Architecture](architecture)** - System design, RDF pipeline, and API reference
+- **[Deployment](deployment)** - DigitalOcean production deployment guide
+- **[Features](features)** - Full feature reference including fish-eye, MiniMap, and Medical Reasoner
 
 ---
 
@@ -161,8 +161,7 @@ The fish-eye effect creates a focus+context view where:
 
 This allows users to focus on specific areas while maintaining awareness of the broader graph structure.
 
-![Fish-Eye Demo](https://via.placeholder.com/800x400/3b82f6/ffffff?text=Fish-Eye+Graph+Visualization)
-*Interactive fish-eye graph with distance-based scaling*
+> 🖥️ **[Try it live →](https://161.35.239.151)** — click any node to see the fish-eye effect in action (self-signed cert: click "Advanced → Proceed")
 
 ---
 
@@ -217,7 +216,7 @@ We welcome contributions! See our [Development Guide](development) for:
 - **Feb 22, 2026** - RDF medical ontology backend: TTL file, live Flask API, Disease Ontology enrichment (DOID + ICD-10 + MeSH)
 - **Coming Soon** - Search, filters, 1000+ node scaling tests, SPARQL query interface
 
-[📖 View Full Roadmap →](../ACTION_PLAN.md)
+[📖 View Full Roadmap →](https://github.com/gpad1234/Startup-One-Wally-Clean/blob/main/ACTION_PLAN.md)
 
 ---
 
@@ -232,7 +231,7 @@ We welcome contributions! See our [Development Guide](development) for:
 
 ## 📄 License
 
-See [LICENSE](../LICENSE) file for details.
+See [LICENSE](https://github.com/gpad1234/Startup-One-Wally-Clean/blob/main/LICENSE) file for details.
 
 ---
 

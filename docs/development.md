@@ -26,8 +26,8 @@ Complete guide for developers working on WALLY. Covers workflow, architecture, c
 ### Initial Setup
 
 ```bash
-# 1. Fork and clone
-git fork https://github.com/gpad1234/Startup-One-Wally-Clean.git
+# 1. Fork on GitHub, then clone your fork
+
 git clone https://github.com/YOUR_USERNAME/Startup-One-Wally-Clean.git
 cd Startup-One-Wally-Clean
 
@@ -39,17 +39,15 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# 4. Build C libraries
-cd src/core && make && cd ../..
 
-# 5. Install frontend dependencies
+# 4. Install frontend dependencies
 cd graph-ui && npm install && cd ..
 
-# 6. Start development servers
+# 5. Start development servers
 # Terminal 1: python3 ontology_api.py
 # Terminal 2: cd graph-ui && npm run dev
+# Terminal 3 (LLM/NLP): cd ubuntu-deploy && node llm-service.js
 ```
-
 ---
 
 ## Project Architecture
