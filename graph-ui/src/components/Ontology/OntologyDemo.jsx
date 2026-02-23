@@ -12,9 +12,12 @@ import './OntologyDemo.css';
  * - Import RDF/OWL files
  * - Export ontology to RDF/OWL formats
  */
+const PAGE_SIZE = 10;
+
 const OntologyDemo = () => {
   const [classes, setClasses] = useState([]);
   const [instances, setInstances] = useState([]);
+  const [page, setPage] = useState(0);
   const [loadingData, setLoadingData] = useState(false);
   const [importing, setImporting] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -166,7 +169,29 @@ const OntologyDemo = () => {
           {loadingData ? (
             <div className="loading-message">Loading graph data...</div>
           ) : (
-            <GraphView classes={classes} instances={instances} />
+            <>
+              <GraphView
+                classes={classes}
+                instances={instances.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)}
+              />
+              {instances.length > PAGE_SIZE && (
+                <div className="pagination-bar">
+                  <button
+                    className="page-btn"
+                    onClick={() => setPage(p => Math.max(0, p - 1))}
+                    disabled={page === 0}
+                  >← Prev</button>
+                  <span className="page-info">
+                    Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, instances.length)} of {instances.length} instances
+                  </span>
+                  <button
+                    className="page-btn"
+                    onClick={() => setPage(p => Math.min(Math.ceil(instances.length / PAGE_SIZE) - 1, p + 1))}
+                    disabled={(page + 1) * PAGE_SIZE >= instances.length}
+                  >Next →</button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
