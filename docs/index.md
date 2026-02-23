@@ -36,6 +36,14 @@ WALLY combines two complementary AI systems — both **$0 cost**, open-source, a
 - **📋 Confidence Scoring** - Percentage match with reasoning path explanation
 - **💊 Treatment Recommendations** - Suggested treatments per diagnosis
 
+**Medical Ontology (RDF/OWL Backend):**
+- **📄 RDF/Turtle Source of Truth** - `medical_ontology.ttl` drives both the AI Reasoner and Ontology Editor
+- **🔬 Disease Ontology Integration** - All 7 diseases enriched with official [DOID](https://disease-ontology.org/) identifiers
+- **🏷️ ICD-10-CM Codes** - Standard clinical codes (J00, J11.1, I10…) on every disease
+- **📚 MeSH Cross-references** - NLM Medical Subject Headings linked per disease
+- **📖 Official Definitions** - Verbatim definitions from disease-ontology.org
+- **🔄 Updatable** - Re-run `scripts/enrich_from_do.py` to pull latest DO releases
+
 **LLM Integration:**
 - **🤖 Ollama + Llama 3.2** - Free, self-hosted, runs on the same droplet
 - **🔒 Privacy-first** - Data never leaves your server
@@ -110,7 +118,7 @@ Visit **http://localhost:5173** — Ontology Editor and Medical AI Reasoner tabs
 
 **Try the Ontology Editor:** click any node to recenter, adjust the radius slider, use the MiniMap.
 
-**Try the Medical AI Reasoner:** go to the 🏥 tab, click "💬 Describe with AI", type your symptoms in plain English.
+**Try the Medical AI Reasoner:** go to the 🏥 tab, click "💬 Describe with AI", type your symptoms in plain English. Each diagnosis card shows the official **DOID badge** (links to disease-ontology.org), **ICD-10 code**, and **synonyms** sourced from the Human Disease Ontology.
 
 ---
 
@@ -179,6 +187,10 @@ GET /api/ontology/graph/nodes?skip=0&limit=10
 POST /api/ontology/graph/viewport
   Body: {"center_node": "owl:Thing", "radius": 2, "limit": 50}
 GET /api/ontology/graph/neighbors/<node_id>
+
+# Medical ontology endpoints
+GET /api/ontology/medical          # Full knowledge graph (diseases/symptoms/treatments)
+GET /api/ontology/medical/graph    # OWL classes + individuals for Ontology Editor
 ```
 
 [📖 Full API Documentation →](api/)
@@ -202,7 +214,8 @@ We welcome contributions! See our [Development Guide](development) for:
 - **Feb 18, 2026** - Production deployment to DigitalOcean
 - **Feb 19, 2026** - Interactive MiniMap navigation added
 - **Feb 20, 2026** - Medical AI Reasoner + Ollama LLM NLP integration deployed
-- **Coming Soon** - Search, filters, 1000+ node scaling tests
+- **Feb 22, 2026** - RDF medical ontology backend: TTL file, live Flask API, Disease Ontology enrichment (DOID + ICD-10 + MeSH)
+- **Coming Soon** - Search, filters, 1000+ node scaling tests, SPARQL query interface
 
 [📖 View Full Roadmap →](../ACTION_PLAN.md)
 

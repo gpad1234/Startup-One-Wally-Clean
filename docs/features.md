@@ -307,12 +307,15 @@ Ranked Diagnoses + Treatment Recommendations
 
 ### Knowledge Graph
 
-| Entity | Count |
-|--------|-------|
-| Diseases | 7 (flu, cold, COVID-19, strep, migraine, pneumonia, allergy) |
-| Symptoms | 20 (fever, cough, headache, fatigue, ...) |
-| Treatments | 14 (rest, fluids, antibiotics, antihistamines, ...) |
-| Edge weights | 0.1 – 0.95 (symptom specificity) |
+| Entity | Count | Source |
+|--------|-------|--------|
+| Diseases | 7 | `medical_ontology.ttl` → DO-enriched |
+| Symptoms | 20 | `medical_ontology.ttl` with edge weights |
+| Treatments | 14 | `medical_ontology.ttl` with type classification |
+| Hierarchy nodes | 8 | Respiratory / GI / Neuro / Cardio |
+| Edge weights | 0.1 – 0.95 | Symptom specificity per disease |
+
+**Diseases covered:** Common Cold (J00), Influenza (J11.1), Pneumonia, Bronchitis (J20), Gastroenteritis (K52.9), Migraine (G43), Hypertension (I10)
 
 ### Input Modes
 
@@ -337,7 +340,68 @@ Ranked Diagnoses + Treatment Recommendations
 
 ---
 
-## 📖 Feature Guides
+## � RDF Medical Ontology Backend
+
+**Added February 22, 2026** — The Medical AI Reasoner is now backed by a real RDF/OWL knowledge graph stored in `sample_data/medical_ontology.ttl`, enriched with data from the [Human Disease Ontology](https://disease-ontology.org/) (CC BY 4.0).
+
+### Data Pipeline
+
+```
+Disease Ontology API          medical_ontology.ttl
+(disease-ontology.org)   →   (RDF/Turtle source          →   Flask /api/ontology/medical   →   React UI
+                              of truth)                       (rdflib parser)
+
+scripts/enrich_from_do.py
+  - Fetches DOID, definitions,
+    ICD-10-CM, MeSH per disease
+  - Idempotent: re-run anytime
+    to get latest DO releases
+```
+
+### Disease Ontology Enrichment
+
+Every disease in the knowledge graph is cross-referenced with the official [Human Disease Ontology](https://disease-ontology.org/):
+
+| Disease | DOID | ICD-10-CM | MeSH | Synonyms |
+|---------|------|-----------|------|----------|
+| Common Cold | [DOID:10459](https://disease-ontology.org/do#DOID_10459) | J00 | D003139 | acute coryza, acute nasopharyngitis |
+| Influenza | [DOID:8469](https://disease-ontology.org/do#DOID_8469) | J11.1 | D007251 | flu |
+| Pneumonia | [DOID:552](https://disease-ontology.org/do#DOID_552) | — | D011014 | acute pneumonia |
+| Bronchitis | [DOID:6132](https://disease-ontology.org/do#DOID_6132) | J20, J40, J42 | D001991 | chest cold |
+| Gastroenteritis | [DOID:2326](https://disease-ontology.org/do#DOID_2326) | K52.9 | D005759 | cholera morbus |
+| Migraine | [DOID:6364](https://disease-ontology.org/do#DOID_6364) | G43 | D008881 | migraine disorder |
+| Hypertension | [DOID:10763](https://disease-ontology.org/do#DOID_10763) | I10 | D006973 | HTN, hyperpiesia |
+
+### What Appears in the UI
+
+When the Medical AI Reasoner returns a diagnosis, each result card shows:
+- 🔵 **DOID badge** — official disease ID, clickable → disease-ontology.org
+- 🟢 **ICD-10-CM code** — standard clinical classification
+- 💜 **Official definition** — verbatim from the Disease Ontology
+- 🟣 **Synonym chips** — alternative names (up to 3)
+
+### Ontology Editor Integration
+
+The same TTL file also powers the **Ontology Editor** graph tab via `GET /api/ontology/medical/graph`:
+- **5 OWL classes**: `owl:Thing` → `med:Disease`, `med:Symptom`, `med:Treatment`, `med:HierarchyNode`
+- **49 individuals**: all diseases, symptoms, treatments, and hierarchy nodes rendered as graph nodes
+- Class hierarchy shown with `subClassOf` arrows in ReactFlow
+
+### Staying Up to Date
+
+The Disease Ontology team publishes regular releases. To pull the latest definitions:
+
+```bash
+python3 scripts/enrich_from_do.py
+git add sample_data/medical_ontology.ttl
+git commit -m "chore: update DO enrichment"
+```
+
+The script is idempotent — safe to re-run at any time.
+
+---
+
+## �📖 Feature Guides
 
 Detailed documentation for each feature:
 
@@ -361,10 +425,15 @@ Detailed documentation for each feature:
 | Medical AI Reasoner | ✅ Live | 2.0 | Added Feb 20 |
 | NLP Symptom Extraction | ✅ Live | 2.0 | Llama 3.2 via Ollama |
 | Treatment Recommendations | ✅ Live | 2.0 | Per-diagnosis suggestions |
-| Search Bar | 🚧 Planned | 2.1 | Week 1 |
-| Node Filters | 🚧 Planned | 2.1 | Week 1 |
-| Dark Mode | 🚧 Planned | 2.2 | Week 2 |
-| 1000+ Node Support | 🚧 Planned | 3.0 | Week 3-4 |
+| RDF TTL Ontology Backend | ✅ Live | 2.1 | Added Feb 22 |
+| Disease Ontology (DO) Enrichment | ✅ Live | 2.1 | DOID + ICD-10 + MeSH |
+| DOID Badges + ICD-10 in UI | ✅ Live | 2.1 | Clickable DO links |
+| Ontology Editor ← Live TTL | ✅ Live | 2.1 | 5 classes, 49 instances |
+| Search Bar | 🚧 Planned | 2.2 | Week 1 |
+| Node Filters | 🚧 Planned | 2.2 | Week 1 |
+| SPARQL Query Interface | 🚧 Planned | 3.0 | Future |
+| DO Full Subtree Import | 🚧 Planned | 3.0 | DOID:1579 respiratory branch |
+| Dark Mode | 🚧 Planned | 3.0 | Future |
 
 ---
 

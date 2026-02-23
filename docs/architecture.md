@@ -47,6 +47,84 @@ Technical deep-dive into WALLY's system design, algorithms, and scaling strategi
 
 ---
 
+## 🔬 Medical Ontology Data Pipeline
+
+The Medical AI Reasoner reads its knowledge graph from a live RDF/Turtle file via the Flask API — no hardcoded data in the frontend.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                  Medical Ontology Data Flow                     │
+│                                                                 │
+│  disease-ontology.org                                           │
+│  REST API v1                                                    │
+│  api.disease-ontology.org   ──►  scripts/enrich_from_do.py      │
+│  (DOID, ICD-10, MeSH,             (run manually to refresh)     │
+│   definitions, synonyms)                │                       │
+│                                         ▼                       │
+│                             sample_data/                        │
+│                             medical_ontology.ttl                │
+│                             (RDF/Turtle, ~370 lines)            │
+│                                         │                       │
+│                              ┌──────────┴──────────┐           │
+│                              ▼                      ▼           │
+│                 GET /api/ontology/medical   GET /api/ontology/  │
+│                 Flask + rdflib              medical/graph        │
+│                 (diseases, symptoms,        (OWL classes +      │
+│                  treatments, hierarchy,      individuals for     │
+│                  DOID, ICD-10, MeSH)         Ontology Editor)   │
+│                              │                      │           │
+│                              ▼                      ▼           │
+│                 MedicalDiagnosisAI.jsx      OntologyDemo.jsx     │
+│                 (useEffect fetch,           (useEffect fetch,   │
+│                  FALLBACK_ONTOLOGY          mockClasses          │
+│                  if API down)               fallback if down)   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### TTL File Structure
+
+`sample_data/medical_ontology.ttl` uses these namespaces:
+
+| Prefix | Namespace | Usage |
+|--------|-----------|-------|
+| `med:` | Custom properties | Annotation properties, edge weights |
+| `resp:` | Respiratory diseases | CommonCold, Influenza, Pneumonia, Bronchitis |
+| `gi:` | GI diseases | Gastroenteritis |
+| `neuro:` | Neurological | Migraine |
+| `cardio:` | Cardiovascular | Hypertension |
+| `symp:` | Symptoms | 20 symptom individuals |
+| `treat:` | Treatments | 14 treatment individuals |
+| `hier:` | Hierarchy | 8 classification nodes |
+
+### Key RDF Patterns
+
+**Symptom weight edges** use blank nodes:
+```turtle
+symp:Fever med:hasSymptomWeight [
+    med:weightValue "0.9"^^xsd:decimal ;
+    med:weightDisease "resp:Influenza"
+] .
+```
+
+**Disease Ontology enrichment** (added by `enrich_from_do.py`):
+```turtle
+resp:Influenza
+    med:doid     "DOID:8469" ;
+    rdfs:comment "A viral infectious disease..." ;
+    med:synonym  "flu" ;
+    med:icd10Ref "J11.1" ;
+    med:meshRef  "D007251" .
+```
+
+### API Endpoints
+
+| Endpoint | Description | Returns |
+|----------|-------------|--------|
+| `GET /api/ontology/medical` | Full knowledge graph | `{diseases, symptoms, treatments, hierarchy}` |
+| `GET /api/ontology/medical/graph` | OWL classes + individuals | `{classes, instances, summary}` |
+
+---
+
 ## Fish-Eye Pagination Algorithm
 
 The core innovation of WALLY is the **BFS-based fish-eye viewport** algorithm.
