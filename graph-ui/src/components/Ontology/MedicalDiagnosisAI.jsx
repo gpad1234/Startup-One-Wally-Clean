@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './MedicalDiagnosisAI.css';
 
-// Remote LLM service on Ubuntu droplet
-const LLM_SERVICE_URL = import.meta.env.VITE_LLM_SERVICE_URL || 'https://161.35.239.151/llm';
-
 /**
- * MedicalDiagnosisAI - AI-Powered Medical Reasoning using Ontology
+ * MedicalDiagnosisAI - Medical Reasoning using Ontology
  * 
  * Demonstrates practical application of ontology in healthcare:
  * - Symptom analysis with AI reasoning
@@ -151,21 +148,6 @@ const MedicalDiagnosisAI = () => {
   const [diagnosis, setDiagnosis] = useState(null);
   const [reasoning, setReasoning] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
-  const [nlpMode, setNlpMode] = useState(false);
-  const [nlpText, setNlpText] = useState('');
-  const [extracting, setExtracting] = useState(false);
-  const [nlpError, setNlpError] = useState(null);
-  const [nlpStatus, setNlpStatus] = useState(null);
-  const [llmAvailable, setLlmAvailable] = useState(null); // null=checking, true=up, false=down
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4000);
-    fetch(`${LLM_SERVICE_URL}/health`, { signal: controller.signal })
-      .then(r => setLlmAvailable(r.ok))
-      .catch(() => setLlmAvailable(false))
-      .finally(() => clearTimeout(timer));
-  }, []);
 
   const allSymptoms = Object.entries(medicalOntology.symptoms).map(([id, data]) => ({
     id,
@@ -304,61 +286,18 @@ const MedicalDiagnosisAI = () => {
     return chain.reverse();
   };
 
-  const extractSymptomsFromText = async () => {
-    if (!nlpText.trim()) return;
-    setExtracting(true);
-    setNlpError(null);
-    setNlpStatus('Sending to AI on Ubuntu droplet...');
-    try {
-      const res = await fetch(`${LLM_SERVICE_URL}/extract-symptoms`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: nlpText })
-      });
-      const data = await res.json();
-      if (data.success && data.symptomIds?.length > 0) {
-        // Match returned IDs to known ontology symptom IDs
-        const validIds = Object.keys(medicalOntology.symptoms);
-        const matched = data.symptomIds.filter(id => validIds.includes(id));
-        // Also try matching by label
-        const byLabel = data.extracted.flatMap(name => {
-          const found = Object.entries(medicalOntology.symptoms).find(
-            ([, s]) => s.label.toLowerCase() === name.toLowerCase()
-          );
-          return found ? [found[0]] : [];
-        });
-        const combined = [...new Set([...matched, ...byLabel])];
-        if (combined.length > 0) {
-          setSelectedSymptoms(combined);
-          setNlpStatus(`✅ Extracted: ${data.extracted.join(', ')}`);
-        } else {
-          setNlpError(`AI found "${data.extracted.join(', ')}" but none matched the known symptom list. Try clicking symptoms manually.`);
-        }
-      } else {
-        setNlpError('No symptoms detected. Try describing more specifically.');
-      }
-    } catch (err) {
-      setNlpError(`Connection failed: ${err.message}. Is the droplet running?`);
-    } finally {
-      setExtracting(false);
-    }
-  };
-
   const reset = () => {
     setSelectedSymptoms([]);
     setDiagnosis(null);
     setReasoning(null);
-    setNlpText('');
-    setNlpError(null);
-    setNlpStatus(null);
   };
 
   return (
     <div className="medical-ai-container">
       <div className="medical-header">
-        <h1>🏥 Medical AI Reasoner</h1>
+        <h1>🏥 Medical Reasoner</h1>
         <p className="medical-subtitle">
-          AI-powered diagnostic reasoning using ontology structures
+          Symptom-based diagnostic reasoning using ontology structures
         </p>
         <div className="disclaimer">
           ⚠️ Educational demonstration only - Not for actual medical diagnosis
@@ -376,48 +315,7 @@ const MedicalDiagnosisAI = () => {
         <div className="symptom-panel">
           <div className="symptom-panel-header">
             <h2>Select Symptoms</h2>
-            <div className="input-mode-toggle">
-              <button
-                className={`mode-btn ${!nlpMode ? 'active' : ''}`}
-                onClick={() => { setNlpMode(false); setNlpError(null); setNlpStatus(null); }}
-              >🖱️ Click</button>
-              {llmAvailable === true && (
-                <button
-                  className={`mode-btn ${nlpMode ? 'active' : ''}`}
-                  onClick={() => setNlpMode(true)}
-                >💬 Describe with AI</button>
-              )}
-              {llmAvailable === false && (
-                <span className="ai-offline-badge" title="LLM service unavailable — click mode only">🤖 AI offline</span>
-              )}
-            </div>
           </div>
-
-          {nlpMode && (
-            <div className="nlp-input-area">
-              <textarea
-                className="nlp-textarea"
-                placeholder="Describe your symptoms in plain language...&#10;e.g. I have a fever, dry cough, and feel very tired"
-                value={nlpText}
-                onChange={e => setNlpText(e.target.value)}
-                rows={3}
-                maxLength={500}
-                disabled={extracting}
-              />
-              <div className="nlp-actions">
-                <span className="nlp-hint">🤖 Powered by Llama 3.2 on {LLM_SERVICE_URL.replace('http://','').split('/')[0]}</span>
-                <button
-                  className="btn-extract"
-                  onClick={extractSymptomsFromText}
-                  disabled={!nlpText.trim() || extracting}
-                >
-                  {extracting ? '⏳ AI Extracting...' : '✨ Extract Symptoms'}
-                </button>
-              </div>
-              {nlpStatus && <div className="nlp-status success">{nlpStatus}</div>}
-              {nlpError && <div className="nlp-status error">⚠️ {nlpError}</div>}
-            </div>
-          )}
 
           <div className="symptom-grid">
             {allSymptoms.map(symptom => (
