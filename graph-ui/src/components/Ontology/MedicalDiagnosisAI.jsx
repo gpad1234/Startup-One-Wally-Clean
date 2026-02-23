@@ -473,8 +473,39 @@ const MedicalDiagnosisAI = () => {
                   <div className="diagnosis-header">
                     <div className="diagnosis-rank">#{idx + 1}</div>
                     <div className="diagnosis-info">
-                      <h3>{disease.label}</h3>
+                      <h3>
+                        {disease.label}
+                        {disease.doid && (
+                          <a
+                            className="doid-badge"
+                            href={`https://disease-ontology.org/do#${disease.doid.replace('DOID:','DOID_')}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            title="View in Disease Ontology"
+                          >
+                            {disease.doid}
+                          </a>
+                        )}
+                        {disease.icd10Refs?.length > 0 && (
+                          <span className="icd10-badge" title="ICD-10-CM code">
+                            ICD-10: {disease.icd10Refs[0]}
+                          </span>
+                        )}
+                      </h3>
                       <p className="disease-description">{disease.description}</p>
+                      {disease.officialDef && disease.officialDef !== disease.description && (
+                        <p className="official-definition">
+                          <span className="do-label">📖 DO:</span> {disease.officialDef}
+                        </p>
+                      )}
+                      {disease.synonyms?.length > 0 && (
+                        <div className="synonym-row">
+                          <span className="synonym-label">Also known as:</span>
+                          {disease.synonyms.slice(0, 3).map((syn, i) => (
+                            <span key={i} className="synonym-chip">{syn}</span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div className="confidence-badge">
                       <div className="confidence-value">{disease.confidence.toFixed(1)}%</div>

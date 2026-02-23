@@ -608,6 +608,12 @@ def get_medical_ontology():
                 'description': str_val(descs[0]) if descs else '',
                 'symptoms':    sym_ids,
                 'treatments':  treat_ids,
+                # Disease Ontology enrichment
+                'doid':        str_val(next(g.objects(s, MED.doid),   None)),
+                'officialDef': str_val(next(g.objects(s, RDFS.comment), None)),
+                'synonyms':    [str_val(v) for v in g.objects(s, MED.synonym)],
+                'icd10Refs':   [str_val(v) for v in g.objects(s, MED.icd10Ref)],
+                'meshRefs':    [str_val(v) for v in g.objects(s, MED.meshRef)],
             }
 
         # ---- Hierarchy -------------------------------------------------------

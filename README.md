@@ -247,3 +247,5 @@ MIT — see [LICENSE](LICENSE)
 **Last Updated**: February 2026
 **Stack**: React 18 · Flask · Ollama Llama 3.2 · nginx HTTPS · DigitalOcean Ubuntu 24.04
 
+## Reference:
+https://disease-ontology.org/
