@@ -623,6 +623,17 @@
   font-weight: 600;
 }
 
+.ai-offline-badge {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #999;
+  background: #f3f3f3;
+  border: 1px dashed #ccc;
+  cursor: default;
+  user-select: none;
+}
+
 /* ── NLP Input Area ── */
 .nlp-input-area {
   background: #f8f9ff;

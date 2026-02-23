@@ -156,6 +156,16 @@ const MedicalDiagnosisAI = () => {
   const [extracting, setExtracting] = useState(false);
   const [nlpError, setNlpError] = useState(null);
   const [nlpStatus, setNlpStatus] = useState(null);
+  const [llmAvailable, setLlmAvailable] = useState(null); // null=checking, true=up, false=down
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
+    fetch(`${LLM_SERVICE_URL}/health`, { signal: controller.signal })
+      .then(r => setLlmAvailable(r.ok))
+      .catch(() => setLlmAvailable(false))
+      .finally(() => clearTimeout(timer));
+  }, []);
 
   const allSymptoms = Object.entries(medicalOntology.symptoms).map(([id, data]) => ({
     id,
@@ -371,10 +381,15 @@ const MedicalDiagnosisAI = () => {
                 className={`mode-btn ${!nlpMode ? 'active' : ''}`}
                 onClick={() => { setNlpMode(false); setNlpError(null); setNlpStatus(null); }}
               >🖱️ Click</button>
-              <button
-                className={`mode-btn ${nlpMode ? 'active' : ''}`}
-                onClick={() => setNlpMode(true)}
-              >💬 Describe with AI</button>
+              {llmAvailable === true && (
+                <button
+                  className={`mode-btn ${nlpMode ? 'active' : ''}`}
+                  onClick={() => setNlpMode(true)}
+                >💬 Describe with AI</button>
+              )}
+              {llmAvailable === false && (
+                <span className="ai-offline-badge" title="LLM service unavailable — click mode only">🤖 AI offline</span>
+              )}
             </div>
           </div>
 
