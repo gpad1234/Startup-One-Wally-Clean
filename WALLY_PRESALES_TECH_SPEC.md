@@ -466,9 +466,17 @@ The LLM sits **around** the diagnostic engine, never **inside** it. The ontology
 
 | Environment | URL | Cost |
 |---|---|---|
-| Live demo | https://161.35.239.151 | $12/mo DigitalOcean droplet |
+| Live demo | http://161.35.239.151 | $12/mo DigitalOcean droplet |
 | Local dev | http://localhost:5173 | $0 |
 | Self-hosted enterprise | Customer infrastructure | $0 infrastructure (open source) |
+
+#### Service Endpoints
+
+| Service | URL |
+|---|---|
+| Frontend | http://161.35.239.151 |
+| API | http://161.35.239.151/api/ontology/health |
+| LLM Service | http://161.35.239.151/llm/health |
 
 ### 7.2 Commercial Tiers (Proposed)
 
@@ -508,7 +516,7 @@ The LLM sits **around** the diagnostic engine, never **inside** it. The ontology
 
 ## 10. Summary
 
-WALLY is not a prototype — it is a **production system** running today at [https://161.35.239.151](https://161.35.239.151), combining graph-algorithm diagnostic reasoning with a live Llama 3.2 NLP layer. The deterministic ontology core was a deliberate design choice:
+WALLY is not a prototype — it is a **production system** running today at [http://161.35.239.151](http://161.35.239.151), combining graph-algorithm diagnostic reasoning with a live Llama 3.2 NLP layer. The deterministic ontology core was a deliberate design choice:
 
 1. **Trust first**: Clinicians and regulators need to understand *how* a system reaches a diagnosis before they trust it with patients
 2. **Ontology as ground truth**: The knowledge graph is the medical model; LLMs are added as a natural language interface, not as the judge
@@ -523,5 +531,5 @@ The LLM layer is already live — free-text symptom input works today via Llama 
 
 *WALLY — Medical Ontology Platform*  
 *Contact: [github.com/gpad1234/Startup-One-Wally-Clean](https://github.com/gpad1234/Startup-One-Wally-Clean)*  
-*Live Demo: [https://161.35.239.151](https://161.35.239.151)*  
+*Live Demo: [http://161.35.239.151](http://161.35.239.151)*  
 *Documentation: [https://gpad1234.github.io/Startup-One-Wally-Clean/](https://gpad1234.github.io/Startup-One-Wally-Clean/)*
